@@ -1,0 +1,2313 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix My Block - Bronx Community Action</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS & JS for Bronx Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Google Translate Script for fallback full dynamic translation -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,es,fr,ar,zh-CN,bn,hi,pt,ru,ur,ht,it,de,pl,vi,tl,ko,ja,yo,sq,uk',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        bronx: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#16a34a',
+                            600: '#15803d',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        accent: {
+                            amber: '#f59e0b',
+                            blue: '#2563eb',
+                            red: '#ef4444'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #16a34a; border-radius: 4px; }
+        #map { z-index: 1; min-height: 400px; border-radius: 1rem; }
+
+        /* Light Mode Theme Customizations */
+        body.theme-light {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        body.theme-light header {
+            background-color: #ffffff;
+            color: #0f172a;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        body.theme-light .mobile-nav-bar {
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+        }
+        body.theme-light .hero-banner {
+            background: linear-gradient(135deg, #059669 0%, #10b981 50%, #047857 100%);
+            color: #ffffff;
+        }
+        body.theme-light .dark-card {
+            background-color: #ffffff;
+            color: #0f172a;
+            border: 1px solid #e2e8f0;
+        }
+        body.theme-light .nav-btn {
+            color: #475569;
+        }
+        body.theme-light .nav-btn:hover {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+        body.theme-light .nav-btn.active-nav {
+            background-color: #ecfdf5;
+            color: #047857;
+        }
+
+        /* Dark Mode Theme Customizations */
+        body.theme-dark {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        body.theme-dark header {
+            background-color: #1e293b;
+            color: #f8fafc;
+            border-bottom: 1px solid #334155;
+        }
+        body.theme-dark .mobile-nav-bar {
+            background-color: #1e293b;
+            border-top: 1px solid #334155;
+        }
+        body.theme-dark .hero-banner {
+            background: linear-gradient(135deg, #064e3b 0%, #0f172a 50%, #134e4a 100%);
+            color: #ffffff;
+        }
+        body.theme-dark .dark-card {
+            background-color: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #334155;
+        }
+        body.theme-dark .bg-white {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+        body.theme-dark .bg-slate-50 {
+            background-color: #0f172a !important;
+            color: #cbd5e1 !important;
+            border-color: #334155 !important;
+        }
+        body.theme-dark .text-slate-900, 
+        body.theme-dark .text-slate-800, 
+        body.theme-dark .text-slate-700 {
+            color: #f1f5f9 !important;
+        }
+        body.theme-dark .text-slate-600, 
+        body.theme-dark .text-slate-500 {
+            color: #94a3b8 !important;
+        }
+        body.theme-dark input, 
+        body.theme-dark select, 
+        body.theme-dark textarea {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+
+        /* Hide Google Translate attribution bar nicely */
+        .goog-te-banner-frame { display: none !important; }
+        body { top: 0px !important; }
+        #google_translate_element { display: none; }
+    </style>
+</head>
+<body class="theme-light text-slate-800 font-sans min-h-screen flex flex-col antialiased transition-colors duration-200">
+
+    <!-- Google Translate Hidden Div -->
+    <div id="google_translate_element"></div>
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-50 shadow-md transition-colors duration-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('wireframe')">
+                    <div class="bg-emerald-600 text-white p-2.5 rounded-xl shadow-lg flex items-center justify-center">
+                        <i class="fa-solid fa-hammer text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">Fix My Block</span>
+                        <span class="block text-xs text-emerald-600 font-semibold" data-i18n="bronx_tagline">The Bronx, NYC</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Nav Tabs -->
+                <nav class="hidden md:flex space-x-1 lg:space-x-2">
+                    <button id="nav-wireframe" onclick="switchTab('wireframe')" class="nav-btn active-nav px-3 py-2 rounded-lg text-sm font-semibold transition">
+                        <i class="fa-solid fa-house mr-1.5"></i> <span data-i18n="nav_overview">Overview</span>
+                    </button>
+                    <button id="nav-map" onclick="switchTab('map')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold transition">
+                        <i class="fa-solid fa-map-location-dot mr-1.5"></i> <span data-i18n="nav_map">Bronx Map</span>
+                    </button>
+                    <button id="nav-issues" onclick="switchTab('issues')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold transition">
+                        <i class="fa-solid fa-list-check mr-1.5"></i> <span data-i18n="nav_feed">Feed & Progress</span>
+                    </button>
+                    <button id="nav-donate" onclick="switchTab('donate')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold transition">
+                        <i class="fa-solid fa-hand-holding-heart mr-1.5 text-amber-500"></i> <span data-i18n="nav_donate">Donate</span>
+                    </button>
+                    <button id="nav-rewards" onclick="switchTab('rewards')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold transition">
+                        <i class="fa-solid fa-trophy mr-1.5 text-amber-500"></i> <span data-i18n="nav_rewards">Rewards & XP</span>
+                    </button>
+                </nav>
+
+                <!-- Action Controls: Report, Settings & Login -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <button onclick="openReportModal()" class="hidden sm:flex bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-2 rounded-xl text-sm transition shadow-lg items-center space-x-1.5 transform active:scale-95">
+                        <i class="fa-solid fa-camera"></i>
+                        <span data-i18n="btn_report">Report Issue</span>
+                    </button>
+
+                    <!-- Settings Button (Language & Theme) -->
+                    <button onclick="openSettingsModal()" title="Settings & Language" class="p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition flex items-center justify-center">
+                        <i class="fa-solid fa-gear text-lg"></i>
+                    </button>
+
+                    <!-- Dynamic Auth Control Pill -->
+                    <div id="auth-status-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Bar -->
+        <div class="mobile-nav-bar md:hidden flex justify-around py-2 text-xs">
+            <button onclick="switchTab('wireframe')" class="mobile-nav-btn text-emerald-600 font-medium flex flex-col items-center">
+                <i class="fa-solid fa-house text-base"></i>
+                <span data-i18n="nav_overview">Overview</span>
+            </button>
+            <button onclick="switchTab('map')" class="mobile-nav-btn text-slate-500 font-medium flex flex-col items-center">
+                <i class="fa-solid fa-map-location-dot text-base"></i>
+                <span data-i18n="nav_map">Map</span>
+            </button>
+            <button onclick="switchTab('issues')" class="mobile-nav-btn text-slate-500 font-medium flex flex-col items-center">
+                <i class="fa-solid fa-list-check text-base"></i>
+                <span data-i18n="nav_feed">Tracker</span>
+            </button>
+            <button onclick="switchTab('donate')" class="mobile-nav-btn text-slate-500 font-medium flex flex-col items-center">
+                <i class="fa-solid fa-hand-holding-heart text-base text-amber-500"></i>
+                <span data-i18n="nav_donate">Donate</span>
+            </button>
+            <button onclick="switchTab('rewards')" class="mobile-nav-btn text-slate-500 font-medium flex flex-col items-center">
+                <i class="fa-solid fa-trophy text-base text-amber-500"></i>
+                <span data-i18n="nav_rewards">Rewards</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- MAIN CONTENT CONTAINERS -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- ========================================================= -->
+        <!-- TAB 1: WIREFRAME / LANDING PAGE                           -->
+        <!-- ========================================================= -->
+        <section id="tab-wireframe" class="tab-content space-y-8">
+            <!-- Header Banner -->
+            <div class="hero-banner rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden border border-emerald-500/20">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-[180px] pointer-events-none">
+                    <i class="fa-solid fa-hammer"></i>
+                </div>
+                <div class="relative z-10 max-w-3xl">
+                    <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-white/30" data-i18n="badge_official">Official Bronx Citizen App</span>
+                    <h1 class="text-3xl sm:text-5xl font-extrabold mt-3 tracking-tight">Fix My Block <span class="inline-block animate-bounce">🔨</span></h1>
+                    <p class="text-emerald-50 text-sm sm:text-base mt-3 leading-relaxed" data-i18n="hero_desc">
+                        A community-powered platform for citizens across Hunts Point, Mott Haven, Fordham, Soundview, Riverdale & the Bronx to report issues, track repairs, donate tools or funds, and earn rewards!
+                    </p>
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        <button onclick="openReportModal()" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold px-5 py-3 rounded-xl transition shadow-lg flex items-center space-x-2">
+                            <i class="fa-solid fa-plus-circle text-lg"></i>
+                            <span data-i18n="btn_report_hero">Report a Problem Now</span>
+                        </button>
+                        <button onclick="switchTab('donate')" class="bg-white/10 hover:bg-white/20 text-white font-extrabold px-5 py-3 rounded-xl border border-white/30 transition shadow-lg flex items-center space-x-2">
+                            <i class="fa-solid fa-hand-holding-heart"></i>
+                            <span data-i18n="btn_donate_hero">Donate Tools or Funds</span>
+                        </button>
+                        <button onclick="openSettingsModal()" class="bg-slate-900/40 hover:bg-slate-900/60 text-white font-bold px-4 py-3 rounded-xl border border-white/20 transition flex items-center space-x-2">
+                            <i class="fa-solid fa-language"></i>
+                            <span data-i18n="btn_settings_hero">Language & Theme</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wireframe Grid Layout -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Box 1: About Fix My Block -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center text-xl font-bold">
+                                <i class="fa-solid fa-circle-info"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold" data-i18n="about_title">About Fix My Block</h2>
+                        </div>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4" data-i18n="about_desc">
+                            <strong>Fix My Block</strong> is located in <span class="text-emerald-700 font-bold">Bronx, NYC</span>. Our web platform empowers local residents to take charge of their streets, parks, and sidewalks by establishing direct visibility on community maintenance.
+                        </p>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                            <div class="flex items-center text-xs text-slate-700 font-semibold" data-i18n="served_neighborhoods">
+                                <i class="fa-solid fa-location-dot text-emerald-600 mr-2"></i> Served Neighborhoods:
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-md font-semibold">Hunts Point</span>
+                                <span class="bg-slate-200 text-slate-800 text-xs px-2.5 py-1 rounded-md font-semibold">Mott Haven</span>
+                                <span class="bg-slate-200 text-slate-800 text-xs px-2.5 py-1 rounded-md font-semibold">Fordham</span>
+                                <span class="bg-slate-200 text-slate-800 text-xs px-2.5 py-1 rounded-md font-semibold">Soundview</span>
+                                <span class="bg-slate-200 text-slate-800 text-xs px-2.5 py-1 rounded-md font-semibold">Riverdale</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                        <span>Official Portal: fixmyblock-bronx.nyc</span>
+                        <span class="text-emerald-600 font-bold" data-i18n="free_open">100% Free & Open</span>
+                    </div>
+                </div>
+
+                <!-- Box 2: What Our Focus Is? -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center text-xl font-bold">
+                                <i class="fa-solid fa-bullseye"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold" data-i18n="focus_title">What Our Focus Is?</h2>
+                        </div>
+                        <blockquote class="bg-amber-50/60 border-l-4 border-amber-500 p-4 rounded-r-xl italic text-slate-700 text-sm mb-4" data-i18n="focus_quote">
+                            "Our focus is to give and help our community. We are determined to make the Bronx a better, safer place to live for citizens."
+                        </blockquote>
+                        <ul class="space-y-2.5 text-xs text-slate-600">
+                            <li class="flex items-start">
+                                <i class="fa-solid fa-circle-check text-emerald-600 mr-2 mt-0.5"></i>
+                                <span data-i18n="focus_point_1"><strong>Potholes & Street Fixes:</strong> Direct reporting to city public works and local cleanup crews.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa-solid fa-circle-check text-emerald-600 mr-2 mt-0.5"></i>
+                                <span data-i18n="focus_point_2"><strong>Illegal Dumping Prevention:</strong> Crowdsourced neighborhood surveillance and rapid photo logs in Hunts Point.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa-solid fa-circle-check text-emerald-600 mr-2 mt-0.5"></i>
+                                <span data-i18n="focus_point_3"><strong>Tool & Material Donations:</strong> Donate cleanup supplies, brooms, paint, or money to aid block captains.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                        <span class="text-xs text-slate-500 font-medium" data-i18n="community_driven">Community Driven</span>
+                        <button onclick="switchTab('issues')" class="text-emerald-600 font-bold text-xs hover:underline flex items-center">
+                            <span data-i18n="view_live_issues">View Live Issues</span> <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Box 3: Where to Report Problem? -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-12 h-12 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center text-xl font-bold">
+                            <i class="fa-solid fa-camera-retro"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold" data-i18n="where_report_title">Where to Report Problem?</h2>
+                            <p class="text-xs text-slate-500" data-i18n="where_report_subtitle">How Bronx citizens report, track & earn rewards</p>
+                        </div>
+                    </div>
+
+                    <p class="text-slate-600 text-sm mb-6" data-i18n="where_report_desc">
+                        When you have to report a problem in your area: <strong>Snap a pic</strong> and upload it on Fix My Block where you can track progress on your reported issue, donate tools, and earn XP points!
+                    </p>
+
+                    <!-- 3 Step Process Visual -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center relative group hover:border-emerald-500 transition">
+                            <div class="w-10 h-10 bg-emerald-600 text-white rounded-full flex items-center justify-center font-black mx-auto mb-3 shadow">1</div>
+                            <h3 class="font-bold text-sm" data-i18n="step1_title">1. Snap A Photo</h3>
+                            <p class="text-xs text-slate-500 mt-1" data-i18n="step1_desc">Take a photo of the pothole, trash buildup, or broken streetlight in your block.</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center relative group hover:border-emerald-500 transition">
+                            <div class="w-10 h-10 bg-emerald-600 text-white rounded-full flex items-center justify-center font-black mx-auto mb-3 shadow">2</div>
+                            <h3 class="font-bold text-sm" data-i18n="step2_title">2. Upload & Pin Area</h3>
+                            <p class="text-xs text-slate-500 mt-1" data-i18n="step2_desc">Select your Bronx neighborhood (e.g., Hunts Point) and pin location on our Bronx Map.</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center relative group hover:border-emerald-500 transition">
+                            <div class="w-10 h-10 bg-emerald-600 text-white rounded-full flex items-center justify-center font-black mx-auto mb-3 shadow">3</div>
+                            <h3 class="font-bold text-sm" data-i18n="step3_title">3. Track & Earn XP</h3>
+                            <p class="text-xs text-slate-500 mt-1" data-i18n="step3_desc">Receive live progress updates (+100 XP) and redeem points for Bronx local rewards.</p>
+                        </div>
+                    </div>
+
+                    <!-- Call to action button -->
+                    <div class="mt-6 text-center">
+                        <button onclick="openReportModal()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 py-3 rounded-xl shadow-md transition inline-flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <span data-i18n="btn_upload_now">Upload Photo & Report Issue Now</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Wireframe Gallery -->
+            <div class="dark-card bg-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-emerald-400" data-i18n="recent_reports_title">Common Bronx Issues Reported</h2>
+                        <p class="text-xs text-slate-400" data-i18n="recent_reports_sub">Recent photo submissions from Bronx neighborhood residents</p>
+                    </div>
+                    <button onclick="switchTab('issues')" class="mt-3 sm:mt-0 text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 font-semibold px-4 py-2 rounded-xl border border-slate-700 transition flex items-center self-start">
+                        <span data-i18n="btn_view_active">View All Active Reports</span> <i class="fa-solid fa-chevron-right ml-2 text-[10px]"></i>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="wireframe-gallery">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 2: BRONX MAP & INTERACTIVE REPORTING                  -->
+        <!-- ========================================================= -->
+        <section id="tab-map" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold flex items-center">
+                        <i class="fa-solid fa-map-marked-alt text-emerald-600 mr-2.5"></i> <span data-i18n="map_header_title">Bronx Neighborhood Interactive Map</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5" data-i18n="map_header_sub">Click any pin on the map to inspect reported issues, donate tools or funds, and track progress across Hunts Point, Mott Haven, Fordham & more.</p>
+                </div>
+                
+                <!-- Neighborhood Filter Bar -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-bold text-slate-600" data-i18n="filter_area">Filter Area:</span>
+                    <select id="map-neighborhood-filter" onchange="filterMapMarkers()" class="bg-slate-100 border border-slate-300 text-xs font-semibold rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <option value="ALL">All Bronx Areas</option>
+                        <option value="Hunts Point">Hunts Point</option>
+                        <option value="Mott Haven">Mott Haven</option>
+                        <option value="Fordham">Fordham</option>
+                        <option value="Soundview">Soundview</option>
+                        <option value="Riverdale">Riverdale</option>
+                        <option value="Pelham Bay">Pelham Bay</option>
+                    </select>
+                    <button onclick="openReportModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition shadow-md flex items-center space-x-1">
+                        <i class="fa-solid fa-plus"></i>
+                        <span data-i18n="btn_new_report">New Report</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Map Container + Side Detail Drawer -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 relative">
+                    <div id="map" class="w-full h-[520px] rounded-2xl border border-slate-200 shadow-inner"></div>
+                    <div class="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm p-3 rounded-xl border border-slate-200 shadow-md z-[400] text-xs space-y-1.5">
+                        <div class="font-bold mb-1" data-i18n="map_legend_title">Status Legend</div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
+                            <span class="text-slate-600" data-i18n="status_reported">Reported / Pending</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                            <span class="text-slate-600" data-i18n="status_in_progress">In Progress / Ticketed</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                            <span class="text-slate-600" data-i18n="status_resolved">Resolved / Cleaned</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="map-issue-detail" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-[520px] overflow-y-auto custom-scrollbar">
+                    <div class="text-center py-16 text-slate-400 my-auto" id="map-detail-placeholder">
+                        <i class="fa-solid fa-location-dot text-4xl text-slate-300 mb-3 block"></i>
+                        <h3 class="font-bold" data-i18n="no_issue_selected">No Issue Selected</h3>
+                        <p class="text-xs text-slate-500 mt-1" data-i18n="no_issue_selected_desc">Click on any pin on the Bronx map to view issue photos, location details, progress tracker, and make donations.</p>
+                    </div>
+                    <div id="map-detail-content" class="hidden space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 3: ISSUE FEED & DETAILED PROGRESS TRACKER             -->
+        <!-- ========================================================= -->
+        <section id="tab-issues" class="tab-content hidden space-y-6">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="w-full sm:w-auto flex-1 max-w-md relative">
+                    <i class="fa-solid fa-search absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                    <input type="text" id="search-issues" onkeyup="renderIssuesFeed()" placeholder="Search Bronx streets, issue title, or category..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                    <select id="feed-neighborhood-filter" onchange="renderIssuesFeed()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500">
+                        <option value="ALL">All Neighborhoods</option>
+                        <option value="Hunts Point">Hunts Point</option>
+                        <option value="Mott Haven">Mott Haven</option>
+                        <option value="Fordham">Fordham</option>
+                        <option value="Soundview">Soundview</option>
+                        <option value="Riverdale">Riverdale</option>
+                        <option value="Pelham Bay">Pelham Bay</option>
+                    </select>
+
+                    <select id="feed-status-filter" onchange="renderIssuesFeed()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500">
+                        <option value="ALL">All Statuses</option>
+                        <option value="Reported">Reported</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="issues-feed-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically Rendered -->
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 4: CITIZEN DONATION CENTER (TOOLS & MONEY)            -->
+        <!-- ========================================================= -->
+        <section id="tab-donate" class="tab-content hidden space-y-6">
+            <div class="bg-gradient-to-r from-amber-600 via-amber-500 to-amber-700 text-slate-950 p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="max-w-2xl">
+                    <span class="bg-slate-950/20 text-slate-950 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider" data-i18n="donate_badge">Citizen Community Support</span>
+                    <h2 class="text-3xl font-extrabold mt-2 leading-tight" data-i18n="donate_banner_title">Support Bronx Block Maintenance</h2>
+                    <p class="text-slate-900 text-sm mt-2 font-medium" data-i18n="donate_banner_desc">
+                        Help local cleanup crews and block captains by donating physical equipment (brooms, grabbers, paint, bags) or contributing directly to repair funds!
+                    </p>
+                </div>
+                <div class="bg-slate-950/10 p-4 rounded-2xl border border-slate-950/20 text-center min-w-[180px]">
+                    <div class="text-xs uppercase font-extrabold text-slate-950" data-i18n="earn_rewards_label">Earn Rewards</div>
+                    <div class="text-2xl font-black text-slate-950 mt-1">+50 XP / Donation</div>
+                    <div class="text-[10px] text-slate-900 font-bold mt-0.5" data-i18n="plus_badge">Plus Community Badge</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold flex items-center">
+                                <i class="fa-solid fa-toolbox text-amber-500 mr-2"></i> <span data-i18n="tools_needed_title">Donate Tools & Equipment Needed</span>
+                            </h3>
+                            <p class="text-xs text-slate-500 mt-0.5" data-i18n="tools_needed_sub">Block captains in Hunts Point and Mott Haven are requesting these physical supplies:</p>
+                        </div>
+                        <button onclick="openDonateModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold px-3.5 py-2 rounded-xl shadow transition">
+                            <i class="fa-solid fa-plus mr-1"></i> <span data-i18n="btn_offer_item">Offer New Item</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="tools-needed-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold flex items-center mb-1">
+                            <i class="fa-solid fa-hand-holding-dollar text-emerald-600 mr-2"></i> <span data-i18n="repair_fund_title">Direct Repair Fund</span>
+                        </h3>
+                        <p class="text-xs text-slate-500 mb-4" data-i18n="repair_fund_sub">Support hosting, mapping tech, and local neighborhood micro-grants across all 5 Bronx districts.</p>
+
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                            <div class="flex justify-between items-center text-xs font-bold">
+                                <span>Bronx Action Fund</span>
+                                <span class="text-emerald-700">$1,450 / $2,000 Raised</span>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                                <div class="bg-emerald-600 h-full rounded-full" style="width: 72.5%"></div>
+                            </div>
+                            <button onclick="openDonateModal()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold py-2.5 rounded-xl shadow transition flex items-center justify-center space-x-1.5">
+                                <i class="fa-solid fa-heart"></i>
+                                <span data-i18n="btn_donate_fund">Donate $5, $10, or $25 to Fund</span>
+                            </button>
+                        </div>
+
+                        <div class="mt-6">
+                            <h4 class="text-xs font-bold mb-3 flex items-center">
+                                <i class="fa-solid fa-award text-amber-500 mr-1.5"></i> <span data-i18n="recent_donors_title">Recent Community Donors</span>
+                            </h4>
+                            <div class="space-y-2.5 text-xs" id="recent-donors-list">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 text-[11px] text-slate-400 text-center">
+                        Fix My Block is non-profit citizen community initiative.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 5: REWARDS & GAMIFICATION MARKETPLACE                 -->
+        <!-- ========================================================= -->
+        <section id="tab-rewards" class="tab-content hidden space-y-6">
+            <div class="dark-card bg-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl border border-emerald-800/30">
+                <div class="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
+                    <div class="relative">
+                        <img id="profile-card-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Avatar" class="w-20 h-20 rounded-full border-4 border-emerald-500 shadow-xl object-cover">
+                        <span id="profile-card-lvl" class="absolute bottom-0 right-0 bg-amber-500 text-slate-950 text-xs font-black px-2 py-0.5 rounded-full shadow">Lvl 2</span>
+                    </div>
+                    <div class="text-center sm:text-left flex-1">
+                        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                            <h2 id="profile-card-name" class="text-2xl font-black">Alex Rivera</h2>
+                            <span id="profile-card-badge" class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold px-2.5 py-0.5 rounded-full">Hunts Point Hero Badge</span>
+                        </div>
+                        <p id="profile-card-neigh" class="text-xs text-slate-400 mt-1">Hunts Point Resident • Progress Auto-Saved</p>
+                        
+                        <div class="mt-4 max-w-md">
+                            <div class="flex justify-between text-xs font-bold mb-1">
+                                <span class="text-amber-400"><i class="fa-solid fa-bolt mr-1"></i> <span id="rewards-xp-text">350</span> / 500 XP</span>
+                                <span class="text-slate-400" data-i18n="level_progress">Level Progress</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden p-0.5 border border-slate-700">
+                                <div id="rewards-xp-bar" class="bg-gradient-to-r from-amber-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: 70%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col space-y-2 min-w-[140px]">
+                        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl text-center">
+                            <div class="text-xs text-slate-400 font-semibold uppercase" data-i18n="earned_points">Earned Points</div>
+                            <div class="text-3xl font-black text-amber-400 mt-1" id="user-points-display">250</div>
+                            <div class="text-[10px] text-emerald-400 font-medium mt-0.5" data-i18n="ready_to_redeem">Ready to Redeem</div>
+                        </div>
+                        <button onclick="openLoginModal()" class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 font-bold py-1.5 px-3 rounded-xl border border-slate-700 transition">
+                            <i class="fa-solid fa-user-pen mr-1"></i> <span data-i18n="btn_switch_account">Switch Account</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How to Earn XP -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-lg flex items-center justify-center text-lg font-bold">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold" data-i18n="earn_report_title">Report Issue</div>
+                        <div class="text-xs text-emerald-600 font-bold">+100 XP & 50 Points</div>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center text-lg font-bold">
+                        <i class="fa-solid fa-hand-holding-heart"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold" data-i18n="earn_donate_title">Donate Equipment/Funds</div>
+                        <div class="text-xs text-amber-600 font-bold">+50 XP & 30 Points</div>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center text-lg font-bold">
+                        <i class="fa-solid fa-thumbs-up"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold" data-i18n="earn_upvote_title">Upvote Reports</div>
+                        <div class="text-xs text-blue-600 font-bold">+10 XP & 5 Points</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rewards Catalog -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold" data-i18n="rewards_catalog_title">Bronx Community Rewards Marketplace</h3>
+                        <p class="text-xs text-slate-500" data-i18n="rewards_catalog_sub">Redeem your earned points for local vouchers & Bronx community perks!</p>
+                    </div>
+                    <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full">4 Perks Available</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="rewards-grid">
+                    <!-- Dynamically Populated -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================================= -->
+    <!-- MODAL: APP SETTINGS (20+ LANGUAGES & LIGHT/DARK THEME)    -->
+    <!-- ========================================================= -->
+    <div id="settings-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in duration-200">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center text-lg font-bold">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 dark:text-white text-base" data-i18n="settings_modal_title">App Settings</h3>
+                        <p class="text-xs text-emerald-600 font-bold" data-i18n="settings_modal_sub">Language Mode & Theme Appearance</p>
+                    </div>
+                </div>
+                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white text-xl font-bold">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="py-5 space-y-6">
+                <!-- Theme Mode Selector (Light vs Dark) -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center justify-between">
+                        <span data-i18n="theme_mode_label">Appearance / Theme Mode</span>
+                        <span id="theme-status-badge" class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-semibold">Light Mode Active</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button" id="btn-theme-light" onclick="setAppTheme('light')" class="flex items-center justify-center space-x-2 py-3 px-4 rounded-xl border-2 font-bold text-xs transition border-emerald-500 bg-emerald-50/50 text-emerald-800">
+                            <i class="fa-solid fa-sun text-amber-500 text-base"></i>
+                            <span data-i18n="theme_light">Light Mode</span>
+                        </button>
+                        <button type="button" id="btn-theme-dark" onclick="setAppTheme('dark')" class="flex items-center justify-center space-x-2 py-3 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-xs transition text-slate-600 dark:text-slate-300">
+                            <i class="fa-solid fa-moon text-indigo-400 text-base"></i>
+                            <span data-i18n="theme_dark">Dark Mode</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 20+ Working Language Selection Mode -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+                        <span data-i18n="language_label">Working Language Mode (20+ Languages)</span>
+                        <span class="text-[10px] text-emerald-600 font-extrabold" data-i18n="live_translate">Live Translation</span>
+                    </label>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2.5" data-i18n="language_sub">
+                        Select your preferred language. The Bronx community app will instantly translate UI controls, forms, and neighborhood updates.
+                    </p>
+
+                    <div class="relative">
+                        <select id="language-selector" onchange="changeLanguageMode(this.value)" class="w-full px-3.5 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="en">🇺🇸 English (Default)</option>
+                            <option value="es">🇲🇽 Español (Spanish)</option>
+                            <option value="fr">🇫🇷 Français (French)</option>
+                            <option value="ar">🇸🇦 العربية (Arabic)</option>
+                            <option value="zh">🇨🇳 中文 (Chinese)</option>
+                            <option value="bn">🇧🇩 বাংলা (Bengali)</option>
+                            <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+                            <option value="pt">🇧🇷 Português (Portuguese)</option>
+                            <option value="ru">🇷🇺 Русский (Russian)</option>
+                            <option value="ur">🇵🇰 اردو (Urdu)</option>
+                            <option value="ht">🇭🇹 Kreyòl Ayisyen (Haitian Creole)</option>
+                            <option value="it">🇮🇹 Italiano (Italian)</option>
+                            <option value="de">🇩🇪 Deutsch (German)</option>
+                            <option value="pl">🇵🇱 Polski (Polish)</option>
+                            <option value="vi">🇻🇳 Tiếng Việt (Vietnamese)</option>
+                            <option value="tl">🇵🇭 Tagalog / Filipino</option>
+                            <option value="ko">🇰🇷 한국어 (Korean)</option>
+                            <option value="ja">🇯🇵 日本語 (Japanese)</option>
+                            <option value="yo">🇳🇬 Yorùbá (Yoruba)</option>
+                            <option value="sq">🇦🇱 Shqip (Albanian)</option>
+                            <option value="uk">🇺🇦 Українська (Ukrainian)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-emerald-50 dark:bg-slate-800 p-3 rounded-xl border border-emerald-200 dark:border-slate-700 text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
+                    <div class="font-bold flex items-center">
+                        <i class="fa-solid fa-check-circle mr-1.5 text-emerald-600"></i>
+                        <span data-i18n="settings_saved_notice">Preferences Auto-Saved</span>
+                    </div>
+                    <div class="text-[11px] text-slate-600 dark:text-slate-400" data-i18n="settings_saved_desc">Your language choice and light/dark theme preference will be remembered every time you return.</div>
+                </div>
+            </div>
+
+            <button onclick="closeSettingsModal()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-check"></i>
+                <span data-i18n="btn_save_close">Save & Done</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL: LOGIN / SIGN UP                                    -->
+    <!-- ========================================================= -->
+    <div id="login-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in duration-200">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center text-lg font-bold">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 text-base">Citizen Log In / Sign Up</h3>
+                        <p class="text-xs text-emerald-600 font-bold">Save your points & reports across visits</p>
+                    </div>
+                </div>
+                <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="login-form" onsubmit="handleLoginSubmit(event)" class="py-4 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Your Name / Username *</label>
+                    <input type="text" id="login-username" required placeholder="e.g. Alex Rivera" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Bronx Neighborhood *</label>
+                    <select id="login-neighborhood" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <option value="Hunts Point">Hunts Point</option>
+                        <option value="Mott Haven">Mott Haven</option>
+                        <option value="Fordham">Fordham</option>
+                        <option value="Soundview">Soundview</option>
+                        <option value="Riverdale">Riverdale</option>
+                        <option value="Pelham Bay">Pelham Bay</option>
+                    </select>
+                </div>
+
+                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-xs text-emerald-800 space-y-1">
+                    <div class="font-bold"><i class="fa-solid fa-shield-halved mr-1"></i> Quick & Safe Registration</div>
+                    <div class="text-[11px] text-emerald-700">Your points, level, and reports will be saved to this web browser.</div>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Start Session & Save Progress</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL: REPORT NEW BRONX ISSUE                             -->
+    <!-- ========================================================= -->
+    <div id="report-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl border border-slate-200 animate-in fade-in duration-200">
+            <div class="bg-slate-900 text-white p-5 rounded-t-3xl flex items-center justify-between sticky top-0 z-10">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-emerald-600 p-2 rounded-lg">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-lg">Report Bronx Issue</h3>
+                        <p class="text-xs text-emerald-400">Earn +100 XP for keeping Bronx clean & safe</p>
+                    </div>
+                </div>
+                <button onclick="closeReportModal()" class="text-slate-400 hover:text-white text-xl font-bold p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="report-form" onsubmit="submitReportForm(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Issue Title / Description Summary *</label>
+                    <input type="text" id="report-title" required placeholder="e.g. Overflowing dumpster near Hunts Point Ave station" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Bronx Neighborhood *</label>
+                        <select id="report-neighborhood" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="Hunts Point">Hunts Point</option>
+                            <option value="Mott Haven">Mott Haven</option>
+                            <option value="Fordham">Fordham</option>
+                            <option value="Soundview">Soundview</option>
+                            <option value="Riverdale">Riverdale</option>
+                            <option value="Pelham Bay">Pelham Bay</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Issue Category *</label>
+                        <select id="report-category" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="Illegal Dumping">Illegal Dumping & Trash</option>
+                            <option value="Pothole">Pothole / Street Damage</option>
+                            <option value="Streetlight">Broken Traffic Light / Lamp</option>
+                            <option value="Parks">Park / Playground Maintenance</option>
+                            <option value="Sidewalk">Damaged Sidewalk</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Specific Location / Cross Streets *</label>
+                    <input type="text" id="report-location" required placeholder="e.g. Corner of Southern Blvd & Lafayette Ave" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Upload Photo Evidence *</label>
+                    <div class="border-2 border-dashed border-slate-300 rounded-2xl p-4 text-center bg-slate-50 hover:border-emerald-500 transition relative">
+                        <input type="file" id="report-file" accept="image/*" onchange="previewImageUpload(this)" class="hidden">
+                        
+                        <div id="upload-preview-container" class="hidden relative">
+                            <img id="upload-preview-img" src="" alt="Preview" class="max-h-40 rounded-xl mx-auto border border-slate-200 object-cover">
+                            <button type="button" onclick="resetPhotoUpload()" class="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full text-xs shadow">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+
+                        <div id="upload-placeholder" class="space-y-2 cursor-pointer" onclick="document.getElementById('report-file').click()">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-emerald-600"></i>
+                            <div class="text-xs font-bold text-slate-700">Click to upload photo or drag & drop</div>
+                            <div class="text-[10px] text-slate-400">PNG, JPG, or WEBP up to 10MB</div>
+                        </div>
+
+                        <div class="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-center gap-2">
+                            <span class="text-[10px] text-slate-500 font-bold">Or pick sample issue photo:</span>
+                            <button type="button" onclick="selectSampleImage('dumping')" class="text-[10px] bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-semibold px-2 py-1 rounded-md">
+                                Trash
+                            </button>
+                            <button type="button" onclick="selectSampleImage('pothole')" class="text-[10px] bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-semibold px-2 py-1 rounded-md">
+                                Pothole
+                            </button>
+                            <button type="button" onclick="selectSampleImage('light')" class="text-[10px] bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-semibold px-2 py-1 rounded-md">
+                                Streetlight
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Additional Details</label>
+                    <textarea id="report-details" rows="2" placeholder="Provide extra information for city repair workers..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>Submit Bronx Report (+100 XP)</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL: DONATE / FUND OR TOOL OFFER                        -->
+    <!-- ========================================================= -->
+    <div id="donate-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in duration-200">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center text-lg font-bold">
+                        <i class="fa-solid fa-hand-holding-heart"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 text-base">Make a Donation</h3>
+                        <p class="text-xs text-amber-600 font-bold">+50 XP Community Supporter</p>
+                    </div>
+                </div>
+                <button onclick="closeDonateModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="flex bg-slate-100 p-1 rounded-xl my-4 text-xs font-bold">
+                <button type="button" onclick="toggleDonateType('money')" id="donate-tab-money" class="flex-1 py-2 rounded-lg bg-white shadow text-amber-600">
+                    <i class="fa-solid fa-dollar-sign mr-1"></i> Money Grant
+                </button>
+                <button type="button" onclick="toggleDonateType('tool')" id="donate-tab-tool" class="flex-1 py-2 rounded-lg text-slate-600">
+                    <i class="fa-solid fa-wrench mr-1"></i> Physical Tools
+                </button>
+            </div>
+
+            <div id="donate-section-money" class="space-y-4">
+                <div id="donate-issue-summary" class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-700 font-medium">
+                    Supporting General Bronx Community Repair Fund
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Select Pledge Amount</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button type="button" onclick="setDonateAmount(5)" class="donate-amt-btn border border-slate-300 py-2 rounded-xl text-xs font-bold hover:border-amber-500 focus:bg-amber-500 focus:text-white">$5</button>
+                        <button type="button" onclick="setDonateAmount(10)" class="donate-amt-btn border border-slate-300 py-2 rounded-xl text-xs font-bold hover:border-amber-500 focus:bg-amber-500 focus:text-white active bg-amber-500 text-white border-amber-500">$10</button>
+                        <button type="button" onclick="setDonateAmount(25)" class="donate-amt-btn border border-slate-300 py-2 rounded-xl text-xs font-bold hover:border-amber-500 focus:bg-amber-500 focus:text-white">$25</button>
+                        <button type="button" onclick="setDonateAmount(50)" class="donate-amt-btn border border-slate-300 py-2 rounded-xl text-xs font-bold hover:border-amber-500 focus:bg-amber-500 focus:text-white">$50</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Donor Name (Saved to profile)</label>
+                    <input type="text" id="donor-name" value="Alex Rivera" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <button onclick="confirmMoneyDonation()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-3 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                    <span>Confirm Money Pledge & Earn +50 XP</span>
+                </button>
+            </div>
+
+            <div id="donate-section-tool" class="hidden space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Item / Tool Name *</label>
+                    <input type="text" id="tool-item-name" placeholder="e.g. 2 heavy-duty street brooms & safety vests" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Select Target Neighborhood *</label>
+                    <select id="tool-neighborhood" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        <option value="Hunts Point">Hunts Point Block Captains</option>
+                        <option value="Mott Haven">Mott Haven Cleanup Crew</option>
+                        <option value="Fordham">Fordham Beautification Team</option>
+                        <option value="Soundview">Soundview Waterfront Volunteers</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Pickup or Dropoff Notes</label>
+                    <textarea id="tool-notes" rows="2" placeholder="e.g. Can drop off at Southern Blvd community center on Saturday" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+                </div>
+
+                <button onclick="confirmToolDonation()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-3 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-box-open"></i>
+                    <span>Pledge Tool Donation & Earn +50 XP</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript Application Code -->
+    <script>
+        // MULTI-LANGUAGE TRANSLATION DICTIONARY (21 LANGUAGES SUPPORTED)
+        const translations = {
+            en: {
+                bronx_tagline: "The Bronx, NYC",
+                nav_overview: "Overview",
+                nav_map: "Bronx Map",
+                nav_feed: "Feed & Progress",
+                nav_donate: "Donate",
+                nav_rewards: "Rewards & XP",
+                btn_report: "Report Issue",
+                badge_official: "Official Bronx Citizen App",
+                hero_desc: "A community-powered platform for citizens across Hunts Point, Mott Haven, Fordham, Soundview, Riverdale & the Bronx to report issues, track repairs, donate tools or funds, and earn rewards!",
+                btn_report_hero: "Report a Problem Now",
+                btn_donate_hero: "Donate Tools or Funds",
+                btn_settings_hero: "Language & Theme",
+                about_title: "About Fix My Block",
+                about_desc: "Fix My Block is located in Bronx, NYC. Our web platform empowers local residents to take charge of their streets, parks, and sidewalks by establishing direct visibility on community maintenance.",
+                served_neighborhoods: "Served Neighborhoods:",
+                free_open: "100% Free & Open",
+                focus_title: "What Our Focus Is?",
+                focus_quote: "\"Our focus is to give and help our community. We are determined to make the Bronx a better, safer place to live for citizens.\"",
+                focus_point_1: "Potholes & Street Fixes: Direct reporting to city public works and local cleanup crews.",
+                focus_point_2: "Illegal Dumping Prevention: Crowdsourced neighborhood surveillance and rapid photo logs in Hunts Point.",
+                focus_point_3: "Tool & Material Donations: Donate cleanup supplies, brooms, paint, or money to aid block captains.",
+                community_driven: "Community Driven",
+                view_live_issues: "View Live Issues",
+                where_report_title: "Where to Report Problem?",
+                where_report_subtitle: "How Bronx citizens report, track & earn rewards",
+                where_report_desc: "When you have to report a problem in your area: Snap a pic and upload it on Fix My Block where you can track progress on your reported issue, donate tools, and earn XP points!",
+                step1_title: "1. Snap A Photo",
+                step1_desc: "Take a photo of the pothole, trash buildup, or broken streetlight in your block.",
+                step2_title: "2. Upload & Pin Area",
+                step2_desc: "Select your Bronx neighborhood (e.g., Hunts Point) and pin location on our Bronx Map.",
+                step3_title: "3. Track & Earn XP",
+                step3_desc: "Receive live progress updates (+100 XP) and redeem points for Bronx local rewards.",
+                btn_upload_now: "Upload Photo & Report Issue Now",
+                recent_reports_title: "Common Bronx Issues Reported",
+                recent_reports_sub: "Recent photo submissions from Bronx neighborhood residents",
+                btn_view_active: "View All Active Reports",
+                map_header_title: "Bronx Neighborhood Interactive Map",
+                map_header_sub: "Click any pin on the map to inspect reported issues, donate tools or funds, and track progress across Hunts Point, Mott Haven, Fordham & more.",
+                filter_area: "Filter Area:",
+                btn_new_report: "New Report",
+                map_legend_title: "Status Legend",
+                status_reported: "Reported / Pending",
+                status_in_progress: "In Progress / Ticketed",
+                status_resolved: "Resolved / Cleaned",
+                no_issue_selected: "No Issue Selected",
+                no_issue_selected_desc: "Click on any pin on the Bronx map to view issue photos, location details, progress tracker, and make donations.",
+                donate_badge: "Citizen Community Support",
+                donate_banner_title: "Support Bronx Block Maintenance",
+                donate_banner_desc: "Help local cleanup crews and block captains by donating physical equipment (brooms, grabbers, paint, bags) or contributing directly to repair funds!",
+                earn_rewards_label: "Earn Rewards",
+                plus_badge: "Plus Community Badge",
+                tools_needed_title: "Donate Tools & Equipment Needed",
+                tools_needed_sub: "Block captains in Hunts Point and Mott Haven are requesting these physical supplies:",
+                btn_offer_item: "Offer New Item",
+                repair_fund_title: "Direct Repair Fund",
+                repair_fund_sub: "Support hosting, mapping tech, and local neighborhood micro-grants across all 5 Bronx districts.",
+                btn_donate_fund: "Donate $5, $10, or $25 to Fund",
+                recent_donors_title: "Recent Community Donors",
+                level_progress: "Level Progress",
+                earned_points: "Earned Points",
+                ready_to_redeem: "Ready to Redeem",
+                btn_switch_account: "Switch Account",
+                earn_report_title: "Report Issue",
+                earn_donate_title: "Donate Equipment/Funds",
+                earn_upvote_title: "Upvote Reports",
+                rewards_catalog_title: "Bronx Community Rewards Marketplace",
+                rewards_catalog_sub: "Redeem your earned points for local vouchers & Bronx community perks!",
+                settings_modal_title: "App Settings",
+                settings_modal_sub: "Language Mode & Theme Appearance",
+                theme_mode_label: "Appearance / Theme Mode",
+                theme_light: "Light Mode",
+                theme_dark: "Dark Mode",
+                language_label: "Working Language Mode (20+ Languages)",
+                live_translate: "Live Translation",
+                language_sub: "Select your preferred language. The Bronx community app will instantly translate UI controls, forms, and neighborhood updates.",
+                settings_saved_notice: "Preferences Auto-Saved",
+                settings_saved_desc: "Your language choice and light/dark theme preference will be remembered every time you return.",
+                btn_save_close: "Save & Done"
+            },
+            es: {
+                bronx_tagline: "El Bronx, Nueva York",
+                nav_overview: "Resumen",
+                nav_map: "Mapa del Bronx",
+                nav_feed: "Feed y Progreso",
+                nav_donate: "Donar",
+                nav_rewards: "Recompensas y XP",
+                btn_report: "Reportar Problema",
+                badge_official: "Aplicación Oficial del Bronx",
+                hero_desc: "¡Una plataforma comunitaria para que los ciudadanos de Hunts Point, Mott Haven, Fordham, Soundview y el Bronx reporten problemas, donen herramientas y ganen premios!",
+                btn_report_hero: "Reportar un Problema Ahora",
+                btn_donate_hero: "Donar Herramientas o Fondos",
+                btn_settings_hero: "Idioma y Tema",
+                about_title: "Acerca de Fix My Block",
+                about_desc: "Fix My Block está ubicado en el Bronx, NY. Empoderamos a los residentes para que cuiden sus calles, parques y aceras.",
+                served_neighborhoods: "Barrios Atendidos:",
+                free_open: "100% Gratis y Abierto",
+                focus_title: "¿Cuál es nuestro Enfoque?",
+                focus_quote: "\"Nuestro enfoque es ayudar a nuestra comunidad para hacer del Bronx un lugar mejor y más seguro.\"",
+                focus_point_1: "Baches y Reparación de Calles: Reporte directo a obras públicas.",
+                focus_point_2: "Prevención de Vertidos Ilegales: Vigilancia comunitaria con fotos.",
+                focus_point_3: "Donación de Herramientas: Donación de escobas, pintura o fondos.",
+                community_driven: "Impulsado por la Comunidad",
+                view_live_issues: "Ver Problemas en Vivo",
+                where_report_title: "¿Dónde Reportar?",
+                where_report_subtitle: "Cómo reportar, rastrear y ganar recompensas",
+                where_report_desc: "Toma una foto y súbela a Fix My Block para rastrear el progreso y ganar puntos XP.",
+                step1_title: "1. Toma una Foto",
+                step1_desc: "Toma una foto del bache o basura en tu cuadra.",
+                step2_title: "2. Sube y Marca la Ubicación",
+                step2_desc: "Selecciona tu barrio del Bronx y marca el mapa.",
+                step3_title: "3. Rastrae y Gana XP",
+                step3_desc: "Recibe actualizaciones (+100 XP) y canjea puntos por recompensas.",
+                btn_upload_now: "Subir Foto y Reportar Ahora",
+                recent_reports_title: "Problemas Comunes Reportados",
+                recent_reports_sub: "Fotos recientes enviadas por residentes del Bronx",
+                btn_view_active: "Ver Todos los Reportes",
+                map_header_title: "Mapa Interactivo del Bronx",
+                map_header_sub: "Haz clic en los pines para inspeccionar problemas y donar.",
+                filter_area: "Filtrar Área:",
+                btn_new_report: "Nuevo Reporte",
+                map_legend_title: "Leyenda de Estado",
+                status_reported: "Reportado / Pendiente",
+                status_in_progress: "En Progreso",
+                status_resolved: "Resuelto / Limpio",
+                no_issue_selected: "Ningún Problema Seleccionado",
+                no_issue_selected_desc: "Haz clic en un pin para ver detalles y fotos.",
+                donate_badge: "Apoyo Comunitario",
+                donate_banner_title: "Apoya el Mantenimiento del Bronx",
+                donate_banner_desc: "Ayuda a los equipos de limpieza donando escobas, pintura o fondos.",
+                earn_rewards_label: "Gana Recompensas",
+                plus_badge: "Más Insignia Comunitaria",
+                tools_needed_title: "Herramientas Necesarias",
+                tools_needed_sub: "Los capitanes de cuadra solicitan estos suministros:",
+                btn_offer_item: "Ofrecer Artículo",
+                repair_fund_title: "Fondo de Reparación Directa",
+                repair_fund_sub: "Apoya la tecnología de mapas y pequeñas subvenciones.",
+                btn_donate_fund: "Donar $5, $10 o $25 al Fondo",
+                recent_donors_title: "Donantes Recientes",
+                level_progress: "Progreso de Nivel",
+                earned_points: "Puntos Ganados",
+                ready_to_redeem: "Listo para Canjear",
+                btn_switch_account: "Cambiar Cuenta",
+                earn_report_title: "Reportar Problema",
+                earn_donate_title: "Donar Equipos/Fondos",
+                earn_upvote_title: "Votar Reportes",
+                rewards_catalog_title: "Mercado de Recompensas del Bronx",
+                rewards_catalog_sub: "¡Canjea tus puntos por vales locales!",
+                settings_modal_title: "Configuración de la App",
+                settings_modal_sub: "Modo de Idioma y Apariencia",
+                theme_mode_label: "Modo de Apariencia",
+                theme_light: "Modo Claro",
+                theme_dark: "Modo Oscuro",
+                language_label: "Idioma de Trabajo (+20 Idiomas)",
+                live_translate: "Traducción en Vivo",
+                language_sub: "Selecciona tu idioma preferido. La aplicación traducirá automáticamente la interfaz.",
+                settings_saved_notice: "Preferencias Guardadas",
+                settings_saved_desc: "Tus opciones se recordarán cada vez que regreses.",
+                btn_save_close: "Guardar y Salir"
+            },
+            fr: {
+                bronx_tagline: "Le Bronx, NYC",
+                nav_overview: "Aperçu",
+                nav_map: "Carte du Bronx",
+                nav_feed: "Flux & Progrès",
+                nav_donate: "Faire un don",
+                nav_rewards: "Récompenses & XP",
+                btn_report: "Signaler un problème",
+                badge_official: "Application Officielle du Bronx",
+                hero_desc: "Une plateforme communautaire pour signaler les problèmes, donner du matériel et gagner des récompenses!",
+                btn_report_hero: "Signaler un problème maintenant",
+                btn_donate_hero: "Donner des outils ou des fonds",
+                btn_settings_hero: "Langue & Thème",
+                about_title: "À propos de Fix My Block",
+                about_desc: "Fix My Block aide les résidents du Bronx à prendre soin de leurs rues et parcs.",
+                served_neighborhoods: "Quartiers servis:",
+                free_open: "100% Gratuit & Ouvert",
+                focus_title: "Notre Objectif",
+                focus_quote: "\"Notre objectif est d'aider la communauté du Bronx à devenir un endroit meilleur.\"",
+                focus_point_1: "Nids-de-poule et rue: Signalement direct aux services municipaux.",
+                focus_point_2: "Prévention des dépôts sauvages: Surveillance photos dans le Bronx.",
+                focus_point_3: "Donations d'outils: Balais, peinture ou soutien financier.",
+                community_driven: "Action Communautaire",
+                view_live_issues: "Voir les rapports en direct",
+                where_report_title: "Où signaler un problème?",
+                where_report_subtitle: "Comment signaler, suivre et gagner des récompenses",
+                where_report_desc: "Prenez une photo et envoyez-la pour suivre la réparation et gagner des points XP!",
+                step1_title: "1. Prenez une photo",
+                step1_desc: "Prenez en photo le nid-de-poule ou les déchets sur votre trottoir.",
+                step2_title: "2. Publiez et géolocalisez",
+                step2_desc: "Sélectionnez votre quartier du Bronx et placez un repère sur la carte.",
+                step3_title: "3. Suivez et gagnez du XP",
+                step3_desc: "Recevez des mises à jour (+100 XP) et échangez des points.",
+                btn_upload_now: "Télécharger la photo & signaler",
+                recent_reports_title: "Problèmes récents signalés",
+                recent_reports_sub: "Photos récentes soumises par les habitants du Bronx",
+                btn_view_active: "Voir tous les rapports",
+                map_header_title: "Carte Interactive du Bronx",
+                map_header_sub: "Cliquez sur les repères pour voir les détails et faire un don.",
+                filter_area: "Filtrer le quartier:",
+                btn_new_report: "Nouveau rapport",
+                map_legend_title: "Légende du statut",
+                status_reported: "Signalé / En attente",
+                status_in_progress: "En cours / Programmé",
+                status_resolved: "Résolu / Nettoyé",
+                no_issue_selected: "Aucun problème sélectionné",
+                no_issue_selected_desc: "Cliquez sur un repère sur la carte du Bronx pour voir les photos.",
+                donate_badge: "Soutien Citoyen",
+                donate_banner_title: "Soutenir l'entretien du Bronx",
+                donate_banner_desc: "Aidez les bénévoles en donnant des outils physiques ou des fonds de réparation!",
+                earn_rewards_label: "Gagner des récompenses",
+                plus_badge: "Plus un badge communautaire",
+                tools_needed_title: "Outils & Équipements Requis",
+                tools_needed_sub: "Matériel demandé par les chefs de quartier:",
+                btn_offer_item: "Proposer un outil",
+                repair_fund_title: "Fonds de Réparation Direct",
+                repair_fund_sub: "Soutient les micro-subventions et la technologie de cartographie.",
+                btn_donate_fund: "Donner 5$, 10$ ou 25$",
+                recent_donors_title: "Donateurs Récents",
+                level_progress: "Progression de Niveau",
+                earned_points: "Points Gagnés",
+                ready_to_redeem: "Prêt à échanger",
+                btn_switch_account: "Changer de compte",
+                earn_report_title: "Signaler un problème",
+                earn_donate_title: "Donner du matériel",
+                earn_upvote_title: "Voter pour un signalement",
+                rewards_catalog_title: "Boutique de Récompenses du Bronx",
+                rewards_catalog_sub: "Échangez vos points contre des bons d'achat locaux!",
+                settings_modal_title: "Paramètres de l'application",
+                settings_modal_sub: "Langue & Mode d'affichage",
+                theme_mode_label: "Mode d'affichage",
+                theme_light: "Mode Clair",
+                theme_dark: "Mode Sombre",
+                language_label: "Langue de travail (+20 Langues)",
+                live_translate: "Traduction en direct",
+                language_sub: "Choisissez votre langue. L'application traduira l'interface immédiatement.",
+                settings_saved_notice: "Préférences enregistrées",
+                settings_saved_desc: "Vos préférences de langue et de thème seront sauvegardées.",
+                btn_save_close: "Enregistrer & Fermer"
+            },
+            ar: {
+                bronx_tagline: "البرونكس، نيويورك",
+                nav_overview: "نظرة عامة",
+                nav_map: "خريطة البرونكس",
+                nav_feed: "التحديثات والإنجاز",
+                nav_donate: "التبرع",
+                nav_rewards: "المكافآت والنقاط",
+                btn_report: "الإبلاغ عن مشكلة",
+                badge_official: "التطبيق الرسمي لحي البرونكس",
+                hero_desc: "منصة مجتمعية لسكان البرونكس للإبلاغ عن المشاكل، وتتبع الإصلاحات، والتبرع بالأدوات أو الأموال، وكسب المكافآت!",
+                btn_report_hero: "أبلغ عن مشكلة الآن",
+                btn_donate_hero: "تبرع بالأدوات أو الأموال",
+                btn_settings_hero: "اللغة والمظهر",
+                about_title: "عن تطبيق Fix My Block",
+                about_desc: "يقع Fix My Block في البرونكس، نيويورك. يُمكّن السكان المحليين من العناية بشوارعهم وحدائقهم.",
+                served_neighborhoods: "الأحياء المدعومة:",
+                free_open: "100% مجاني ومفتوح",
+                focus_title: "ما هو تركيزنا؟",
+                focus_quote: "\"تركيزنا هو خدمة مجتمعنا وجعل البرونكس مكاناً أفضل وأكثر أماناً للجميع.\"",
+                focus_point_1: "إصلاح الحفر والشوارع: بلاغات مباشرة لأشغال المدينة.",
+                focus_point_2: "منع التخلص غير القانوني من النفايات: رقابة مجتمعية وتوثيق بالصور.",
+                focus_point_3: "التبرع بالأدوات والمواد: التبرع بفرش التنظيف، والطلاء، أو الدعم المالي.",
+                community_driven: "بدعم مجتمعي",
+                view_live_issues: "عرض البلاغات الحالية",
+                where_report_title: "أين تبلغ عن المشكلة؟",
+                where_report_subtitle: "كيف يبلغ سكان البرونكس ويتتبعون ويربحون المكافآت",
+                where_report_desc: "التقط صورة وقم بتحميلها لتتبع تقدم الإصلاح واكتساب نقاط الخبرة!",
+                step1_title: "1. التقط صورة",
+                step1_desc: "التقط صورة للحفرة أو النفايات المتراكمة في شارعك.",
+                step2_title: "2. ارفع الصورة وحدد الموقع",
+                step2_desc: "حدد حيك في البرونكس وثبّت الموقع على الخريطة.",
+                step3_title: "3. تتبع واكسب النقاط",
+                step3_desc: "احصل على تحديثات مباشرة (+100 XP) واستبدل النقاط بمكافآت.",
+                btn_upload_now: "ارفع الصورة وأبلغ الآن",
+                recent_reports_title: "مشاكل شائعة تم الإبلاغ عنها",
+                recent_reports_sub: "أحدث الصور المقدمة من سكان أحياء البرونكس",
+                btn_view_active: "عرض جميع البلاغات النشطة",
+                map_header_title: "خريطة البرونكس التفاعلية",
+                map_header_sub: "انقر على أي دبوس على الخريطة لمعاينة البلاغات والتبرع.",
+                filter_area: "تصفية المنطقة:",
+                btn_new_report: "بلاغ جديد",
+                map_legend_title: "دليل الحالات",
+                status_reported: "تم الإبلاغ / قيد الانتظار",
+                status_in_progress: "جاري العمل / تم الإصدار",
+                status_resolved: "تم الحل / تم التنظيف",
+                no_issue_selected: "لم يتم تحديد أي مشكلة",
+                no_issue_selected_desc: "انقر على أي دبوس في خريطة البرونكس لمشاهدة التفاصيل والصور.",
+                donate_badge: "دعم المجتمع المحلي",
+                donate_banner_title: "دعم صيانة أحياء البرونكس",
+                donate_banner_desc: "ساعد فرق التنظيف المحلية من خلال التبرع بفرش، أو طلاء، أو أموال إصلاح!",
+                earn_rewards_label: "اكسب مكافآت",
+                plus_badge: "بالإضافة إلى وسام المجتمع",
+                tools_needed_title: "الأدوات والمعدات المطلوبة",
+                tools_needed_sub: "يطلب قادة الأحياء هذه المستلزمات لفرق المتطوعين:",
+                btn_offer_item: "تقديم أداة جديدة",
+                repair_fund_title: "صندوق الإصلاح المباشر",
+                repair_fund_sub: "يدعم تكنولوجيا الخرائط والمنح الصغيرة للأحياء.",
+                btn_donate_fund: "تبرع بـ 5$، 10$، أو 25$",
+                recent_donors_title: "المتبرعون الجدد",
+                level_progress: "تقدم المستوى",
+                earned_points: "النقاط المكتسبة",
+                ready_to_redeem: "جاهز للاستبدال",
+                btn_switch_account: "تغيير الحساب",
+                earn_report_title: "الإبلاغ عن مشكلة",
+                earn_donate_title: "التبرع بـ أدوات/أموال",
+                earn_upvote_title: "التصويت للبلاغات",
+                rewards_catalog_title: "متجر مكافآت مجتمع البرونكس",
+                rewards_catalog_sub: "استبدل نقاطك بقسائم محلية ومزايا في البرونكس!",
+                settings_modal_title: "إعدادات التطبيق",
+                settings_modal_sub: "وضع اللغة ومظهر التطبيق",
+                theme_mode_label: "مظهر التطبيق",
+                theme_light: "الوضع الفاتح",
+                theme_dark: "الوضع الداكن",
+                language_label: "لغة العمل (+20 لغة)",
+                live_translate: "ترجمة فورية",
+                language_sub: "اختر لغتك المفضلة وسيتم ترجمة واجهة التطبيق فوراً.",
+                settings_saved_notice: "تم حفظ التفضيلات تلقائياً",
+                settings_saved_desc: "سيتم تذكر اختيار اللغة والمظهر في كل مرة تعود فيها.",
+                btn_save_close: "حفظ وإغلاق"
+            }
+        };
+
+        // APP STATE WITH LOCALSTORAGE PERSISTENCE
+        let currentUser = {
+            isLoggedIn: true,
+            name: "Alex Rivera",
+            neighborhood: "Hunts Point",
+            xp: 350,
+            level: 2,
+            points: 250,
+            badges: ["Hunts Point Hero", "First Reporter"]
+        };
+
+        let currentSettings = {
+            theme: 'light',
+            language: 'en'
+        };
+
+        let physicalToolsNeeded = [
+            {
+                id: "tool-1",
+                item: "Heavy Duty Trash Grabbers & Brooms",
+                requestedBy: "Hunts Point Clean Block Crew",
+                neighborhood: "Hunts Point",
+                qtyNeeded: "10 Pairs",
+                icon: "fa-broom",
+                pledged: 6
+            },
+            {
+                id: "tool-2",
+                item: "Graffiti Removal Paint & Brushes",
+                requestedBy: "Mott Haven Youth Association",
+                neighborhood: "Mott Haven",
+                qtyNeeded: "5 Cans (Gray/Tan)",
+                icon: "fa-paint-roller",
+                pledged: 3
+            },
+            {
+                id: "tool-3",
+                item: "High-Visibility Safety Vests",
+                requestedBy: "Fordham Volunteer Patrol",
+                neighborhood: "Fordham",
+                qtyNeeded: "15 Vests",
+                icon: "fa-vest",
+                pledged: 10
+            },
+            {
+                id: "tool-4",
+                item: "Waterfront Lawn Mower & Trimmer",
+                requestedBy: "Soundview Park Stewards",
+                neighborhood: "Soundview",
+                qtyNeeded: "1 Unit",
+                icon: "fa-scissors",
+                pledged: 0
+            }
+        ];
+
+        let recentDonors = [
+            { name: "Maria S.", detail: "Donated 4 Trash Grabbers", neighborhood: "Hunts Point", time: "2 hrs ago" },
+            { name: "Devon K.", detail: "Pledged $25 Repair Grant", neighborhood: "Fordham", time: "5 hrs ago" },
+            { name: "Alex Rivera", detail: "Pledged $10 Repair Grant", neighborhood: "Mott Haven", time: "Yesterday" }
+        ];
+
+        let bronxIssues = [
+            {
+                id: "bx-101",
+                title: "Illegal Trash Dumping near Hunts Point Produce Terminal",
+                neighborhood: "Hunts Point",
+                location: "Hunts Point Ave & Food Center Drive",
+                category: "Illegal Dumping",
+                status: "Reported",
+                reportedBy: "Maria S.",
+                reportedDate: "2026-08-30",
+                upvotes: 24,
+                userUpvoted: false,
+                fundingGoal: 150,
+                fundingCurrent: 90,
+                lat: 40.8122,
+                lng: -73.8821,
+                image: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=500&auto=format&fit=crop&q=80",
+                description: "Large pile of wooden pallets, old tires, and debris blocking sidewalk access near the freight entrance.",
+                updates: [
+                    { date: "Aug 30", text: "Reported by citizen. 311 Service Request #BX-9042 submitted." },
+                    { date: "Aug 31", text: "Community members pledged $90 for private carting support." }
+                ]
+            },
+            {
+                id: "bx-102",
+                title: "Hazardous Pothole on Mott Haven Commercial Corridor",
+                neighborhood: "Mott Haven",
+                location: "E 138th St & Willis Ave",
+                category: "Pothole",
+                status: "In Progress",
+                reportedBy: "Alex Rivera",
+                reportedDate: "2026-08-28",
+                upvotes: 41,
+                userUpvoted: true,
+                fundingGoal: 200,
+                fundingCurrent: 200,
+                lat: 40.8091,
+                lng: -73.9228,
+                image: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=500&auto=format&fit=crop&q=80",
+                description: "Deep pothole damaging car tires right near the bus stop. Needs asphalt fill immediately.",
+                updates: [
+                    { date: "Aug 28", text: "Reported with photo evidence." },
+                    { date: "Aug 29", text: "NYC DOT Inspection Team assigned to work order." }
+                ]
+            },
+            {
+                id: "bx-103",
+                title: "Broken Pedestrian Traffic Light on Fordham Road",
+                neighborhood: "Fordham",
+                location: "Fordham Rd & Grand Concourse",
+                category: "Streetlight",
+                status: "Reported",
+                reportedBy: "Devon K.",
+                reportedDate: "2026-09-01",
+                upvotes: 18,
+                userUpvoted: false,
+                fundingGoal: 100,
+                fundingCurrent: 35,
+                lat: 40.8623,
+                lng: -73.8974,
+                image: "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?w=500&auto=format&fit=crop&q=80",
+                description: "Walk signal hanging by loose wire after high winds. Poses hazard for school kids crossing.",
+                updates: [
+                    { date: "Sep 01", text: "Ticket generated. Marked high priority." }
+                ]
+            },
+            {
+                id: "bx-104",
+                title: "Damaged Benches at Soundview Park Waterfront",
+                neighborhood: "Soundview",
+                location: "Soundview Park Promenade",
+                category: "Parks",
+                status: "Resolved",
+                reportedBy: "Carmen L.",
+                reportedDate: "2026-08-20",
+                upvotes: 56,
+                userUpvoted: false,
+                fundingGoal: 120,
+                fundingCurrent: 120,
+                lat: 40.8145,
+                lng: -73.8680,
+                image: "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=500&auto=format&fit=crop&q=80",
+                description: "Graffiti and broken wooden slats on two park benches near the soccer field.",
+                updates: [
+                    { date: "Aug 20", text: "Issue reported by local runners." },
+                    { date: "Aug 22", text: "Fully funded by Bronx Green Grant." },
+                    { date: "Aug 25", text: "Fixed & repainted by Parks Department volunteers!" }
+                ]
+            },
+            {
+                id: "bx-105",
+                title: "Cracked Sidewalk Hazard near Riverdale Metro-North",
+                neighborhood: "Riverdale",
+                location: "Riverdale Ave & W 254th St",
+                category: "Sidewalk",
+                status: "In Progress",
+                reportedBy: "James P.",
+                reportedDate: "2026-08-25",
+                upvotes: 15,
+                userUpvoted: false,
+                fundingGoal: 250,
+                fundingCurrent: 180,
+                lat: 40.9031,
+                lng: -73.9063,
+                image: "https://images.unsplash.com/photo-1584467735871-8e85353a8413?w=500&auto=format&fit=crop&q=80",
+                description: "Tree root uplifting sidewalk concrete tiles by 4 inches. Tripping hazard for seniors.",
+                updates: [
+                    { date: "Aug 25", text: "Reported to Parks & Transportation." },
+                    { date: "Aug 27", text: "Forestry team scheduled root trimming." }
+                ]
+            }
+        ];
+
+        const rewardsCatalog = [
+            { id: "rw-1", title: "$5 Local Bronx Bakery Voucher", cost: 150, icon: "fa-cookie-bite", color: "amber", description: "Valid at participating bakeries in Hunts Point & Mott Haven." },
+            { id: "rw-2", title: "NYC Parks Tree Planter Ribbon", cost: 200, icon: "fa-ribbon", color: "emerald", description: "Official digital badge + commemorative lapel pin." },
+            { id: "rw-3", title: "Bronx Community Champion Certificate", cost: 300, icon: "fa-certificate", color: "blue", description: "Signed certificate of appreciation for block stewardship." },
+            { id: "rw-4", title: "1-Day MTA Bus Pass Discount", cost: 400, icon: "fa-bus", color: "purple", description: "Valid on all local Bronx bus routes." }
+        ];
+
+        let leafletMap = null;
+        let mapMarkers = [];
+        let activeSelectedIssueId = null;
+        let selectedDonationIssueId = null;
+        let currentUploadedImageBase64 = null;
+
+        window.onload = function() {
+            loadSavedUserData();
+            loadSettings();
+            renderAuthHeaderUI();
+            renderWireframeGallery();
+            renderIssuesFeed();
+            renderToolDonations();
+            renderRecentDonors();
+            renderRewardsCatalog();
+            updateProfileUI();
+
+            setTimeout(() => {
+                initBronxMap();
+            }, 300);
+        };
+
+        // SETTINGS & THEME LOGIC
+        function loadSettings() {
+            try {
+                const saved = localStorage.getItem('fixmyblock_settings');
+                if(saved) {
+                    currentSettings = JSON.parse(saved);
+                }
+            } catch(e){}
+
+            setAppTheme(currentSettings.theme || 'light', false);
+            if(currentSettings.language) {
+                document.getElementById('language-selector').value = currentSettings.language;
+                applyTranslations(currentSettings.language);
+            }
+        }
+
+        function saveSettings() {
+            try {
+                localStorage.setItem('fixmyblock_settings', JSON.stringify(currentSettings));
+            } catch(e){}
+        }
+
+        function openSettingsModal() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function setAppTheme(themeMode, triggerSave = true) {
+            currentSettings.theme = themeMode;
+            const body = document.body;
+            const btnLight = document.getElementById('btn-theme-light');
+            const btnDark = document.getElementById('btn-theme-dark');
+            const badge = document.getElementById('theme-status-badge');
+
+            if(themeMode === 'dark') {
+                body.classList.remove('theme-light');
+                body.classList.add('theme-dark', 'dark');
+                
+                btnDark.className = "flex items-center justify-center space-x-2 py-3 px-4 rounded-xl border-2 border-emerald-500 bg-slate-800 text-white font-bold text-xs transition";
+                btnLight.className = "flex items-center justify-center space-x-2 py-3 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-xs transition text-slate-600 dark:text-slate-300";
+                if(badge) badge.innerText = "Dark Mode Active";
+            } else {
+                body.classList.remove('theme-dark', 'dark');
+                body.classList.add('theme-light');
+
+                btnLight.className = "flex items-center justify-center space-x-2 py-3 px-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-800 font-bold text-xs transition";
+                btnDark.className = "flex items-center justify-center space-x-2 py-3 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-xs transition text-slate-600 dark:text-slate-300";
+                if(badge) badge.innerText = "Light Mode Active";
+            }
+
+            if(triggerSave) {
+                saveSettings();
+                showToast(`Switched to ${themeMode === 'dark' ? 'Dark' : 'Light'} Mode`, 'info');
+            }
+        }
+
+        // WORKING LANGUAGE MODE LOGIC (SUPPORTING 20+ LANGUAGES)
+        function changeLanguageMode(langCode) {
+            currentSettings.language = langCode;
+            saveSettings();
+            applyTranslations(langCode);
+
+            // RTL language handling (Arabic & Urdu)
+            if(langCode === 'ar' || langCode === 'ur') {
+                document.getElementById('html-root').setAttribute('dir', 'rtl');
+            } else {
+                document.getElementById('html-root').setAttribute('dir', 'ltr');
+            }
+
+            // Fallback Google Translate widget integration for full dynamic content translation
+            const translateSelect = document.querySelector('.goog-te-combo');
+            if (translateSelect) {
+                let targetLang = langCode;
+                if(langCode === 'zh') targetLang = 'zh-CN';
+                translateSelect.value = targetLang;
+                translateSelect.dispatchEvent(new Event('change'));
+            }
+
+            showToast(`Language set to ${langCode.toUpperCase()}`, 'success');
+        }
+
+        function applyTranslations(langCode) {
+            const langDict = translations[langCode] || translations['en'];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if(langDict[key]) {
+                    el.innerText = langDict[key];
+                } else if(translations['en'][key]) {
+                    el.innerText = translations['en'][key];
+                }
+            });
+        }
+
+        // USER DATA PERSISTENCE
+        function loadSavedUserData() {
+            try {
+                const saved = localStorage.getItem('fixmyblock_bronx_user');
+                if(saved) {
+                    currentUser = JSON.parse(saved);
+                }
+            } catch(e) {}
+        }
+
+        function saveUserData() {
+            try {
+                localStorage.setItem('fixmyblock_bronx_user', JSON.stringify(currentUser));
+            } catch(e) {}
+            renderAuthHeaderUI();
+            updateProfileUI();
+        }
+
+        function renderAuthHeaderUI() {
+            const container = document.getElementById('auth-status-container');
+            if(currentUser && currentUser.isLoggedIn) {
+                container.innerHTML = `
+                    <div onclick="switchTab('rewards')" class="cursor-pointer bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:border-emerald-500 rounded-xl px-3 py-1.5 flex items-center space-x-2 transition">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="w-8 h-8 rounded-full border-2 border-emerald-500 object-cover">
+                            <span class="absolute -bottom-1 -right-1 bg-amber-500 text-slate-900 text-[9px] font-black px-1 rounded-full">L${currentUser.level}</span>
+                        </div>
+                        <div class="text-left hidden xs:block">
+                            <div class="text-xs font-bold leading-tight">${currentUser.name}</div>
+                            <div class="text-[10px] text-amber-500 font-bold flex items-center">
+                                <i class="fa-solid fa-bolt mr-1 text-[9px]"></i> <span>${currentUser.xp} XP</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button onclick="openLoginModal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/40 text-xs font-bold px-3 py-2 rounded-xl transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span>Log In / Sign Up</span>
+                    </button>
+                `;
+            }
+        }
+
+        function openLoginModal() {
+            if(currentUser.name) {
+                document.getElementById('login-username').value = currentUser.name;
+                document.getElementById('login-neighborhood').value = currentUser.neighborhood;
+            }
+            document.getElementById('login-modal').classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('login-modal').classList.add('hidden');
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const neighborhood = document.getElementById('login-neighborhood').value;
+
+            currentUser.name = username || "Bronx Resident";
+            currentUser.neighborhood = neighborhood;
+            currentUser.isLoggedIn = true;
+
+            saveUserData();
+            closeLoginModal();
+            showToast(`👋 Welcome back, ${currentUser.name}! Progress saved.`, 'success');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active-nav');
+            });
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            if(activeBtn) {
+                activeBtn.classList.add('active-nav');
+            }
+
+            if(tabName === 'map' && leafletMap) {
+                setTimeout(() => {
+                    leafletMap.invalidateSize();
+                }, 200);
+            }
+        }
+
+        function initBronxMap() {
+            if(leafletMap) return;
+
+            leafletMap = L.map('map').setView([40.8448, -73.8648], 12);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '&copy; OpenStreetMap contributors | Fix My Block Bronx'
+            }).addTo(leafletMap);
+
+            renderMapMarkers();
+        }
+
+        function renderMapMarkers() {
+            if(!leafletMap) return;
+
+            mapMarkers.forEach(m => leafletMap.removeLayer(m));
+            mapMarkers = [];
+
+            const filterArea = document.getElementById('map-neighborhood-filter').value;
+            const filtered = bronxIssues.filter(issue => filterArea === 'ALL' || issue.neighborhood === filterArea);
+
+            filtered.forEach(issue => {
+                let pinColor = '#ef4444';
+                if(issue.status === 'In Progress') pinColor = '#f59e0b';
+                if(issue.status === 'Resolved') pinColor = '#10b981';
+
+                const customMarkerIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div style="background-color: ${pinColor};" class="w-7 h-7 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white text-xs font-bold">
+                             <i class="fa-solid fa-location-dot"></i>
+                           </div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 28]
+                });
+
+                const marker = L.marker([issue.lat, issue.lng], { icon: customMarkerIcon }).addTo(leafletMap);
+                marker.on('click', () => selectIssueForMapDetail(issue.id));
+                mapMarkers.push(marker);
+            });
+        }
+
+        function filterMapMarkers() {
+            renderMapMarkers();
+        }
+
+        function selectIssueForMapDetail(issueId) {
+            const issue = bronxIssues.find(i => i.id === issueId);
+            if(!issue) return;
+
+            activeSelectedIssueId = issue.id;
+
+            const placeholder = document.getElementById('map-detail-placeholder');
+            const content = document.getElementById('map-detail-content');
+
+            placeholder.classList.add('hidden');
+            content.classList.remove('hidden');
+
+            let statusBadgeClass = "bg-red-100 text-red-800";
+            if(issue.status === "In Progress") statusBadgeClass = "bg-amber-100 text-amber-800";
+            if(issue.status === "Resolved") statusBadgeClass = "bg-emerald-100 text-emerald-800";
+
+            content.innerHTML = `
+                <div class="relative">
+                    <img src="${issue.image}" alt="${issue.title}" class="w-full h-44 object-cover rounded-xl shadow-md">
+                    <span class="absolute top-2 right-2 text-xs font-bold px-2.5 py-1 rounded-md shadow ${statusBadgeClass}">
+                        ${issue.status}
+                    </span>
+                    <span class="absolute bottom-2 left-2 bg-slate-900/80 text-white text-[11px] font-semibold px-2 py-0.5 rounded">
+                        <i class="fa-solid fa-building-flag mr-1"></i> ${issue.neighborhood}
+                    </span>
+                </div>
+
+                <div>
+                    <h3 class="font-extrabold text-base leading-snug">${issue.title}</h3>
+                    <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-location-arrow text-emerald-600 mr-1"></i> ${issue.location}</p>
+                </div>
+
+                <p class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200">${issue.description}</p>
+
+                <div class="bg-emerald-50/60 p-3 rounded-xl border border-emerald-200/80">
+                    <div class="flex justify-between items-center text-xs font-bold mb-1">
+                        <span class="text-emerald-900">Community Micro-Grant</span>
+                        <span class="text-emerald-700">$${issue.fundingCurrent} / $${issue.fundingGoal}</span>
+                    </div>
+                    <div class="w-full bg-emerald-200 rounded-full h-2.5 overflow-hidden">
+                        <div class="bg-emerald-600 h-full transition-all" style="width: ${Math.min(100, Math.round((issue.fundingCurrent/issue.fundingGoal)*100))}%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="text-xs font-bold mb-2"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Progress Updates</div>
+                    <div class="space-y-2 text-xs">
+                        ${issue.updates.map(u => `
+                            <div class="flex items-start space-x-2 border-l-2 border-emerald-500 pl-2">
+                                <span class="font-bold text-slate-400 text-[10px] min-w-[40px]">${u.date}</span>
+                                <span>${u.text}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                    <button onclick="handleUpvote('${issue.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-1">
+                        <i class="fa-solid fa-thumbs-up ${issue.userUpvoted ? 'text-blue-600' : 'text-slate-400'}"></i>
+                        <span>${issue.upvotes} Upvotes</span>
+                    </button>
+                    <button onclick="openDonateModal('${issue.id}')" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs shadow transition flex items-center justify-center space-x-1">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                        <span>Donate Funds</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderWireframeGallery() {
+            const gallery = document.getElementById('wireframe-gallery');
+            const sampleItems = bronxIssues.slice(0, 4);
+
+            gallery.innerHTML = sampleItems.map(item => `
+                <div class="bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 hover:border-emerald-500 transition group cursor-pointer" onclick="switchTab('issues')">
+                    <div class="h-28 overflow-hidden relative">
+                        <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <span class="absolute top-2 left-2 bg-slate-900/80 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded">
+                            ${item.neighborhood}
+                        </span>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="text-xs font-bold text-white line-clamp-1">${item.title}</h4>
+                        <p class="text-[10px] text-slate-400 mt-0.5">${item.category}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderIssuesFeed() {
+            const grid = document.getElementById('issues-feed-grid');
+            const search = document.getElementById('search-issues').value.toLowerCase();
+            const neighborhood = document.getElementById('feed-neighborhood-filter').value;
+            const status = document.getElementById('feed-status-filter').value;
+
+            const filtered = bronxIssues.filter(issue => {
+                const matchSearch = issue.title.toLowerCase().includes(search) || 
+                                    issue.location.toLowerCase().includes(search) || 
+                                    issue.category.toLowerCase().includes(search);
+                const matchNeigh = neighborhood === 'ALL' || issue.neighborhood === neighborhood;
+                const matchStat = status === 'ALL' || issue.status === status;
+                return matchSearch && matchNeigh && matchStat;
+            });
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full bg-white p-12 text-center rounded-2xl border border-slate-200">
+                        <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-3 block"></i>
+                        <h3 class="font-bold text-base">No Issues Found</h3>
+                        <p class="text-xs text-slate-500 mt-1">Try adjusting your filters or search keywords.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(issue => {
+                let statusBadgeClass = "bg-red-100 text-red-800";
+                if(issue.status === "In Progress") statusBadgeClass = "bg-amber-100 text-amber-800";
+                if(issue.status === "Resolved") statusBadgeClass = "bg-emerald-100 text-emerald-800";
+
+                const pct = Math.min(100, Math.round((issue.fundingCurrent / issue.fundingGoal) * 100));
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                        <div>
+                            <div class="relative h-48 overflow-hidden">
+                                <img src="${issue.image}" alt="${issue.title}" class="w-full h-full object-cover">
+                                <div class="absolute top-3 right-3 flex space-x-1">
+                                    <span class="text-xs font-bold px-2.5 py-1 rounded-lg shadow-md ${statusBadgeClass}">
+                                        ${issue.status}
+                                    </span>
+                                </div>
+                                <span class="absolute bottom-3 left-3 bg-slate-900/85 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+                                    <i class="fa-solid fa-location-dot text-emerald-400 mr-1"></i> ${issue.neighborhood}
+                                </span>
+                            </div>
+
+                            <div class="p-5 space-y-3">
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">${issue.category}</span>
+                                    <h3 class="font-extrabold text-base mt-1.5 leading-snug">${issue.title}</h3>
+                                    <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-map-pin mr-1"></i> ${issue.location}</p>
+                                </div>
+
+                                <p class="text-xs text-slate-600 line-clamp-2">${issue.description}</p>
+
+                                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                    <div class="flex justify-between items-center text-xs font-bold mb-1">
+                                        <span>Repair Grant Raised</span>
+                                        <span class="text-emerald-700">$${issue.fundingCurrent} / $${issue.fundingGoal}</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                                        <div class="bg-emerald-600 h-full" style="width: ${pct}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="px-5 pb-5 pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                            <button onclick="handleUpvote('${issue.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-1.5">
+                                <i class="fa-solid fa-thumbs-up ${issue.userUpvoted ? 'text-blue-600' : 'text-slate-400'}"></i>
+                                <span>${issue.upvotes}</span>
+                            </button>
+                            <button onclick="openDonateModal('${issue.id}')" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2 rounded-xl text-xs shadow transition flex items-center justify-center space-x-1.5">
+                                <i class="fa-solid fa-hand-holding-dollar"></i>
+                                <span>Donate</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderToolDonations() {
+            const container = document.getElementById('tools-needed-list');
+            if(!container) return;
+
+            container.innerHTML = physicalToolsNeeded.map(tool => `
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center space-x-2.5 mb-2">
+                            <div class="w-8 h-8 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center text-sm font-bold">
+                                <i class="fa-solid ${tool.icon}"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs">${tool.item}</h4>
+                                <span class="text-[10px] text-amber-700 font-bold">${tool.neighborhood}</span>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-slate-500">Target: ${tool.requestedBy}</p>
+                    </div>
+
+                    <div class="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between">
+                        <span class="text-[11px] font-semibold">${tool.pledged} items pledged</span>
+                        <button onclick="openToolDonateModal('${tool.item}', '${tool.neighborhood}')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] px-2.5 py-1 rounded-lg shadow transition">
+                            Pledge Tool
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderRecentDonors() {
+            const container = document.getElementById('recent-donors-list');
+            if(!container) return;
+
+            container.innerHTML = recentDonors.map(d => `
+                <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-7 h-7 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-xs font-bold">
+                            ${d.name.charAt(0)}
+                        </div>
+                        <div>
+                            <div class="font-bold">${d.name} <span class="text-[10px] text-slate-400 font-normal">• ${d.neighborhood}</span></div>
+                            <div class="text-[10px] text-emerald-700 font-semibold">${d.detail}</div>
+                        </div>
+                    </div>
+                    <span class="text-[9px] text-slate-400 font-medium">${d.time}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderRewardsCatalog() {
+            const grid = document.getElementById('rewards-grid');
+            grid.innerHTML = rewardsCatalog.map(item => {
+                const canAfford = currentUser.points >= item.cost;
+                return `
+                    <div class="border border-slate-200 p-5 rounded-2xl flex flex-col justify-between hover:border-emerald-500 transition">
+                        <div>
+                            <div class="w-12 h-12 bg-${item.color}-100 text-${item.color}-600 rounded-2xl flex items-center justify-center text-2xl font-bold mb-3">
+                                <i class="fa-solid ${item.icon}"></i>
+                            </div>
+                            <h4 class="font-extrabold text-sm">${item.title}</h4>
+                            <p class="text-xs text-slate-500 mt-1 leading-relaxed">${item.description}</p>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                            <span class="text-xs font-black text-amber-500"><i class="fa-solid fa-star mr-1"></i> ${item.cost} Points</span>
+                            <button onclick="redeemReward('${item.id}', ${item.cost})" ${!canAfford ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl text-xs font-bold transition ${canAfford ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">
+                                ${canAfford ? 'Redeem' : 'Need Points'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function addXP(amount, pointsAmount = 0, message = "") {
+            currentUser.xp += amount;
+            currentUser.points += pointsAmount;
+
+            const newLevel = Math.floor(currentUser.xp / 500) + 1;
+            if(newLevel > currentUser.level) {
+                currentUser.level = newLevel;
+                showToast(`🎉 Level Up! You are now Bronx Level ${currentUser.level}!`, 'success');
+            } else if(message) {
+                showToast(`+${amount} XP & +${pointsAmount} Points: ${message}`, 'success');
+            }
+
+            saveUserData();
+            renderRewardsCatalog();
+        }
+
+        function updateProfileUI() {
+            document.getElementById('rewards-xp-text').innerText = currentUser.xp;
+            document.getElementById('user-points-display').innerText = currentUser.points;
+            
+            if(document.getElementById('profile-card-name')) {
+                document.getElementById('profile-card-name').innerText = currentUser.name;
+                document.getElementById('profile-card-neigh').innerText = `${currentUser.neighborhood} Resident • Progress Auto-Saved`;
+                document.getElementById('profile-card-lvl').innerText = `Lvl ${currentUser.level}`;
+            }
+
+            const progress = (currentUser.xp % 500) / 5;
+            document.getElementById('rewards-xp-bar').style.width = `${progress}%`;
+        }
+
+        function handleUpvote(issueId) {
+            const issue = bronxIssues.find(i => i.id === issueId);
+            if(!issue) return;
+
+            if(issue.userUpvoted) {
+                issue.upvotes--;
+                issue.userUpvoted = false;
+                showToast("Removed upvote", 'info');
+            } else {
+                issue.upvotes++;
+                issue.userUpvoted = true;
+                addXP(10, 5, "Upvoted neighborhood report");
+            }
+
+            renderIssuesFeed();
+            if(activeSelectedIssueId === issueId) {
+                selectIssueForMapDetail(issueId);
+            }
+        }
+
+        function redeemReward(rewardId, cost) {
+            if(currentUser.points < cost) return;
+            currentUser.points -= cost;
+            saveUserData();
+            renderRewardsCatalog();
+            showToast("🎟️ Reward Redeemed! Voucher saved to your profile.", 'success');
+        }
+
+        function openReportModal() {
+            document.getElementById('report-modal').classList.remove('hidden');
+        }
+
+        function closeReportModal() {
+            document.getElementById('report-modal').classList.add('hidden');
+            resetPhotoUpload();
+        }
+
+        function previewImageUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentUploadedImageBase64 = e.target.result;
+                    document.getElementById('upload-preview-img').src = e.target.result;
+                    document.getElementById('upload-preview-container').classList.remove('hidden');
+                    document.getElementById('upload-placeholder').classList.add('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function selectSampleImage(type) {
+            let sampleUrl = "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=500&auto=format&fit=crop&q=80";
+            if(type === 'pothole') sampleUrl = "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=500&auto=format&fit=crop&q=80";
+            if(type === 'light') sampleUrl = "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?w=500&auto=format&fit=crop&q=80";
+
+            currentUploadedImageBase64 = sampleUrl;
+            document.getElementById('upload-preview-img').src = sampleUrl;
+            document.getElementById('upload-preview-container').classList.remove('hidden');
+            document.getElementById('upload-placeholder').classList.add('hidden');
+            showToast("Sample image selected", "info");
+        }
+
+        function resetPhotoUpload() {
+            currentUploadedImageBase64 = null;
+            document.getElementById('report-file').value = "";
+            document.getElementById('upload-preview-container').classList.add('hidden');
+            document.getElementById('upload-placeholder').classList.remove('hidden');
+        }
+
+        function submitReportForm(e) {
+            e.preventDefault();
+
+            const title = document.getElementById('report-title').value;
+            const neighborhood = document.getElementById('report-neighborhood').value;
+            const category = document.getElementById('report-category').value;
+            const location = document.getElementById('report-location').value;
+            const details = document.getElementById('report-details').value;
+
+            const photo = currentUploadedImageBase64 || "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=500&auto=format&fit=crop&q=80";
+
+            const coordsMap = {
+                "Hunts Point": [40.8115, -73.8830],
+                "Mott Haven": [40.8090, -73.9220],
+                "Fordham": [40.8620, -73.8970],
+                "Soundview": [40.8140, -73.8680],
+                "Riverdale": [40.9030, -73.9060],
+                "Pelham Bay": [40.8500, -73.8200]
+            };
+
+            const baseCoords = coordsMap[neighborhood] || [40.8448, -73.8648];
+            const lat = baseCoords[0] + (Math.random() - 0.5) * 0.008;
+            const lng = baseCoords[1] + (Math.random() - 0.5) * 0.008;
+
+            const newIssue = {
+                id: "bx-" + Math.floor(Math.random() * 9000 + 1000),
+                title: title,
+                neighborhood: neighborhood,
+                location: location,
+                category: category,
+                status: "Reported",
+                reportedBy: currentUser.name,
+                reportedDate: "Just Now",
+                upvotes: 1,
+                userUpvoted: true,
+                fundingGoal: 150,
+                fundingCurrent: 0,
+                lat: lat,
+                lng: lng,
+                image: photo,
+                description: details || "Reported photo evidence uploaded by Bronx resident.",
+                updates: [
+                    { date: "Today", text: `Reported by ${currentUser.name}. Ticket created.` }
+                ]
+            };
+
+            bronxIssues.unshift(newIssue);
+
+            closeReportModal();
+            document.getElementById('report-form').reset();
+
+            addXP(100, 50, "Submitted new Bronx issue report!");
+
+            renderWireframeGallery();
+            renderIssuesFeed();
+            renderMapMarkers();
+
+            switchTab('issues');
+        }
+
+        let activeDonationAmount = 10;
+
+        function openDonateModal(issueId) {
+            selectedDonationIssueId = issueId;
+            const issue = bronxIssues.find(i => i.id === issueId);
+            
+            if(issue) {
+                document.getElementById('donate-issue-summary').innerHTML = `
+                    <div class="font-bold text-slate-900">${issue.title}</div>
+                    <div class="text-[11px] text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot text-emerald-600 mr-1"></i> ${issue.location} (${issue.neighborhood})</div>
+                `;
+            } else {
+                document.getElementById('donate-issue-summary').innerHTML = `Supporting General Bronx Community Repair Fund`;
+            }
+
+            if(currentUser.name) {
+                document.getElementById('donor-name').value = currentUser.name;
+            }
+
+            toggleDonateType('money');
+            document.getElementById('donate-modal').classList.remove('hidden');
+        }
+
+        function openToolDonateModal(itemName, neighborhood) {
+            toggleDonateType('tool');
+            if(itemName) document.getElementById('tool-item-name').value = itemName;
+            if(neighborhood) document.getElementById('tool-neighborhood').value = neighborhood;
+            document.getElementById('donate-modal').classList.remove('hidden');
+        }
+
+        function closeDonateModal() {
+            document.getElementById('donate-modal').classList.add('hidden');
+        }
+
+        function toggleDonateType(type) {
+            const moneyTab = document.getElementById('donate-tab-money');
+            const toolTab = document.getElementById('donate-tab-tool');
+            const moneySec = document.getElementById('donate-section-money');
+            const toolSec = document.getElementById('donate-section-tool');
+
+            if(type === 'money') {
+                moneyTab.className = "flex-1 py-2 rounded-lg bg-white shadow text-amber-600";
+                toolTab.className = "flex-1 py-2 rounded-lg text-slate-600";
+                moneySec.classList.remove('hidden');
+                toolSec.classList.add('hidden');
+            } else {
+                toolTab.className = "flex-1 py-2 rounded-lg bg-white shadow text-amber-600";
+                moneyTab.className = "flex-1 py-2 rounded-lg text-slate-600";
+                toolSec.classList.remove('hidden');
+                moneySec.classList.add('hidden');
+            }
+        }
+
+        function setDonateAmount(amt) {
+            activeDonationAmount = amt;
+            document.querySelectorAll('.donate-amt-btn').forEach(btn => {
+                if(btn.innerText === `$${amt}`) {
+                    btn.classList.add('bg-amber-500', 'text-white', 'border-amber-500');
+                } else {
+                    btn.classList.remove('bg-amber-500', 'text-white', 'border-amber-500');
+                }
+            });
+        }
+
+        function confirmMoneyDonation() {
+            const donorName = document.getElementById('donor-name').value || currentUser.name || 'Anonymous Citizen';
+
+            if(selectedDonationIssueId) {
+                const issue = bronxIssues.find(i => i.id === selectedDonationIssueId);
+                if(issue) {
+                    issue.fundingCurrent += activeDonationAmount;
+                    issue.updates.push({
+                        date: "Today",
+                        text: `Pledge of $${activeDonationAmount} received from ${donorName}.`
+                    });
+                }
+            }
+
+            recentDonors.unshift({
+                name: donorName,
+                detail: `Pledged $${activeDonationAmount} Grant`,
+                neighborhood: currentUser.neighborhood || "Bronx",
+                time: "Just now"
+            });
+
+            renderRecentDonors();
+            closeDonateModal();
+            addXP(50, 30, `Thank you for pledged $${activeDonationAmount} donation!`);
+            renderIssuesFeed();
+        }
+
+        function confirmToolDonation() {
+            const itemName = document.getElementById('tool-item-name').value;
+            const neighborhood = document.getElementById('tool-neighborhood').value;
+
+            if(!itemName) {
+                showToast("Please enter the item name.", "error");
+                return;
+            }
+
+            recentDonors.unshift({
+                name: currentUser.name || "Alex Rivera",
+                detail: `Pledged: ${itemName}`,
+                neighborhood: neighborhood,
+                time: "Just now"
+            });
+
+            renderRecentDonors();
+            closeDonateModal();
+            addXP(50, 30, "Pledged equipment donation!");
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+
+            let bg = "bg-slate-900 text-white";
+            let icon = "fa-circle-info text-blue-400";
+            if(type === 'success') {
+                bg = "bg-emerald-900 text-white border border-emerald-500/50";
+                icon = "fa-circle-check text-emerald-400";
+            } else if(type === 'error') {
+                bg = "bg-red-900 text-white border border-red-500/50";
+                icon = "fa-circle-xmark text-red-400";
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `${bg} px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center space-x-2.5 transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto max-w-sm`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
