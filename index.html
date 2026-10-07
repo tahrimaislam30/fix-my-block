@@ -782,6 +782,20 @@
             </div>
 
             <form id="login-form" onsubmit="handleLoginSubmit(event)" class="py-4 space-y-4">
+                <!-- DB WIRING: real account login (email + password). Prefilled with the demo account. -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Email *</label>
+                    <input type="email" id="login-email" required value="maria.gonzalez@example.com" autocomplete="username" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Password *</label>
+                    <input type="password" id="login-password" required value="demo1234" autocomplete="current-password" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <p id="login-demo-hint" class="text-[10px] text-slate-500 mt-1">Demo account: maria.gonzalez@example.com / demo1234</p>
+                </div>
+
+                <!-- DB WIRING: name + neighborhood are only asked for when signing up -->
+                <div id="signup-only-fields" class="hidden space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Your Name / Username *</label>
                     <input type="text" id="login-username" required placeholder="e.g. Alex Rivera" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
@@ -798,16 +812,23 @@
                         <option value="Pelham Bay">Pelham Bay</option>
                     </select>
                 </div>
+                </div>
 
                 <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-xs text-emerald-800 space-y-1">
                     <div class="font-bold"><i class="fa-solid fa-shield-halved mr-1"></i> Quick & Safe Registration</div>
-                    <div class="text-[11px] text-emerald-700">Your points, level, and reports will be saved to this web browser.</div>
+                    <div class="text-[11px] text-emerald-700">Your points, level, and reports will be saved to your Fix My Block account.</div>
                 </div>
 
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-right-to-bracket"></i>
                     <span>Start Session & Save Progress</span>
                 </button>
+
+                <!-- DB WIRING: switch between log in / sign up, and log out -->
+                <div class="text-center text-[11px] text-slate-500 space-x-2">
+                    <a href="#" id="login-mode-toggle" onclick="toggleLoginMode(event)" class="text-emerald-700 font-bold hover:underline">New here? Create an account</a>
+                    <button type="button" id="logout-btn" onclick="handleLogout()" class="hidden text-red-600 font-bold hover:underline">Log out</button>
+                </div>
             </form>
         </div>
     </div>
@@ -1326,186 +1347,30 @@
             }
         };
 
-        // APP STATE WITH LOCALSTORAGE PERSISTENCE
-        let currentUser = {
-            isLoggedIn: true,
-            name: "Alex Rivera",
+        // APP STATE - DB WIRING: the user now comes from the server (/api/me, /api/login).
+        // Until someone logs in, this is a guest with 0 XP.
+        const GUEST_USER = {
+            isLoggedIn: false,
+            name: "Guest",
             neighborhood: "Hunts Point",
-            xp: 350,
-            level: 2,
-            points: 250,
-            badges: ["Hunts Point Hero", "First Reporter"]
+            xp: 0,
+            level: 1,
+            points: 0,
+            badges: []
         };
+        let currentUser = { ...GUEST_USER };
 
         let currentSettings = {
             theme: 'light',
             language: 'en'
         };
 
-        let physicalToolsNeeded = [
-            {
-                id: "tool-1",
-                item: "Heavy Duty Trash Grabbers & Brooms",
-                requestedBy: "Hunts Point Clean Block Crew",
-                neighborhood: "Hunts Point",
-                qtyNeeded: "10 Pairs",
-                icon: "fa-broom",
-                pledged: 6
-            },
-            {
-                id: "tool-2",
-                item: "Graffiti Removal Paint & Brushes",
-                requestedBy: "Mott Haven Youth Association",
-                neighborhood: "Mott Haven",
-                qtyNeeded: "5 Cans (Gray/Tan)",
-                icon: "fa-paint-roller",
-                pledged: 3
-            },
-            {
-                id: "tool-3",
-                item: "High-Visibility Safety Vests",
-                requestedBy: "Fordham Volunteer Patrol",
-                neighborhood: "Fordham",
-                qtyNeeded: "15 Vests",
-                icon: "fa-vest",
-                pledged: 10
-            },
-            {
-                id: "tool-4",
-                item: "Waterfront Lawn Mower & Trimmer",
-                requestedBy: "Soundview Park Stewards",
-                neighborhood: "Soundview",
-                qtyNeeded: "1 Unit",
-                icon: "fa-scissors",
-                pledged: 0
-            }
-        ];
-
-        let recentDonors = [
-            { name: "Maria S.", detail: "Donated 4 Trash Grabbers", neighborhood: "Hunts Point", time: "2 hrs ago" },
-            { name: "Devon K.", detail: "Pledged $25 Repair Grant", neighborhood: "Fordham", time: "5 hrs ago" },
-            { name: "Alex Rivera", detail: "Pledged $10 Repair Grant", neighborhood: "Mott Haven", time: "Yesterday" }
-        ];
-
-        let bronxIssues = [
-            {
-                id: "bx-101",
-                title: "Illegal Trash Dumping near Hunts Point Produce Terminal",
-                neighborhood: "Hunts Point",
-                location: "Hunts Point Ave & Food Center Drive",
-                category: "Illegal Dumping",
-                status: "Reported",
-                reportedBy: "Maria S.",
-                reportedDate: "2026-08-30",
-                upvotes: 24,
-                userUpvoted: false,
-                fundingGoal: 150,
-                fundingCurrent: 90,
-                lat: 40.8122,
-                lng: -73.8821,
-                image: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=500&auto=format&fit=crop&q=80",
-                description: "Large pile of wooden pallets, old tires, and debris blocking sidewalk access near the freight entrance.",
-                updates: [
-                    { date: "Aug 30", text: "Reported by citizen. 311 Service Request #BX-9042 submitted." },
-                    { date: "Aug 31", text: "Community members pledged $90 for private carting support." }
-                ]
-            },
-            {
-                id: "bx-102",
-                title: "Hazardous Pothole on Mott Haven Commercial Corridor",
-                neighborhood: "Mott Haven",
-                location: "E 138th St & Willis Ave",
-                category: "Pothole",
-                status: "In Progress",
-                reportedBy: "Alex Rivera",
-                reportedDate: "2026-08-28",
-                upvotes: 41,
-                userUpvoted: true,
-                fundingGoal: 200,
-                fundingCurrent: 200,
-                lat: 40.8091,
-                lng: -73.9228,
-                image: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=500&auto=format&fit=crop&q=80",
-                description: "Deep pothole damaging car tires right near the bus stop. Needs asphalt fill immediately.",
-                updates: [
-                    { date: "Aug 28", text: "Reported with photo evidence." },
-                    { date: "Aug 29", text: "NYC DOT Inspection Team assigned to work order." }
-                ]
-            },
-            {
-                id: "bx-103",
-                title: "Broken Pedestrian Traffic Light on Fordham Road",
-                neighborhood: "Fordham",
-                location: "Fordham Rd & Grand Concourse",
-                category: "Streetlight",
-                status: "Reported",
-                reportedBy: "Devon K.",
-                reportedDate: "2026-09-01",
-                upvotes: 18,
-                userUpvoted: false,
-                fundingGoal: 100,
-                fundingCurrent: 35,
-                lat: 40.8623,
-                lng: -73.8974,
-                image: "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?w=500&auto=format&fit=crop&q=80",
-                description: "Walk signal hanging by loose wire after high winds. Poses hazard for school kids crossing.",
-                updates: [
-                    { date: "Sep 01", text: "Ticket generated. Marked high priority." }
-                ]
-            },
-            {
-                id: "bx-104",
-                title: "Damaged Benches at Soundview Park Waterfront",
-                neighborhood: "Soundview",
-                location: "Soundview Park Promenade",
-                category: "Parks",
-                status: "Resolved",
-                reportedBy: "Carmen L.",
-                reportedDate: "2026-08-20",
-                upvotes: 56,
-                userUpvoted: false,
-                fundingGoal: 120,
-                fundingCurrent: 120,
-                lat: 40.8145,
-                lng: -73.8680,
-                image: "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=500&auto=format&fit=crop&q=80",
-                description: "Graffiti and broken wooden slats on two park benches near the soccer field.",
-                updates: [
-                    { date: "Aug 20", text: "Issue reported by local runners." },
-                    { date: "Aug 22", text: "Fully funded by Bronx Green Grant." },
-                    { date: "Aug 25", text: "Fixed & repainted by Parks Department volunteers!" }
-                ]
-            },
-            {
-                id: "bx-105",
-                title: "Cracked Sidewalk Hazard near Riverdale Metro-North",
-                neighborhood: "Riverdale",
-                location: "Riverdale Ave & W 254th St",
-                category: "Sidewalk",
-                status: "In Progress",
-                reportedBy: "James P.",
-                reportedDate: "2026-08-25",
-                upvotes: 15,
-                userUpvoted: false,
-                fundingGoal: 250,
-                fundingCurrent: 180,
-                lat: 40.9031,
-                lng: -73.9063,
-                image: "https://images.unsplash.com/photo-1584467735871-8e85353a8413?w=500&auto=format&fit=crop&q=80",
-                description: "Tree root uplifting sidewalk concrete tiles by 4 inches. Tripping hazard for seniors.",
-                updates: [
-                    { date: "Aug 25", text: "Reported to Parks & Transportation." },
-                    { date: "Aug 27", text: "Forestry team scheduled root trimming." }
-                ]
-            }
-        ];
-
-        const rewardsCatalog = [
-            { id: "rw-1", title: "$5 Local Bronx Bakery Voucher", cost: 150, icon: "fa-cookie-bite", color: "amber", description: "Valid at participating bakeries in Hunts Point & Mott Haven." },
-            { id: "rw-2", title: "NYC Parks Tree Planter Ribbon", cost: 200, icon: "fa-ribbon", color: "emerald", description: "Official digital badge + commemorative lapel pin." },
-            { id: "rw-3", title: "Bronx Community Champion Certificate", cost: 300, icon: "fa-certificate", color: "blue", description: "Signed certificate of appreciation for block stewardship." },
-            { id: "rw-4", title: "1-Day MTA Bus Pass Discount", cost: 400, icon: "fa-bus", color: "purple", description: "Valid on all local Bronx bus routes." }
-        ];
+        // DB WIRING: these lists used to be hard-coded here. They are now stored in Postgres
+        // (seeded from the original values by seed.py) and loaded from the API on page load.
+        let physicalToolsNeeded = [];   // GET /api/tools
+        let recentDonors = [];          // GET /api/donors
+        let bronxIssues = [];           // GET /api/issues
+        let rewardsCatalog = [];        // GET /api/rewards
 
         let leafletMap = null;
         let mapMarkers = [];
@@ -1513,9 +1378,9 @@
         let selectedDonationIssueId = null;
         let currentUploadedImageBase64 = null;
 
-        window.onload = function() {
-            loadSavedUserData();
+        window.onload = async function() {
             loadSettings();
+            await loadSavedUserData();   // DB WIRING: fetch user + data from the API
             renderAuthHeaderUI();
             renderWireframeGallery();
             renderIssuesFeed();
@@ -1625,20 +1490,104 @@
             });
         }
 
-        // USER DATA PERSISTENCE
-        function loadSavedUserData() {
+        // USER DATA PERSISTENCE - DB WIRING: everything is saved in Postgres through the
+        // Flask API (server.py) instead of localStorage.
+        async function api(path, options = {}) {
+            const res = await fetch(path, {
+                method: options.method || 'GET',
+                headers: options.body ? { 'Content-Type': 'application/json' } : {},
+                body: options.body ? JSON.stringify(options.body) : undefined,
+                credentials: 'same-origin'
+            });
+            let data = null;
+            try { data = await res.json(); } catch(e) {}
+            if(!res.ok) {
+                const err = new Error((data && data.error) || `Request failed (${res.status})`);
+                err.status = res.status;
+                throw err;
+            }
+            return data;
+        }
+
+        // Escape text from the database before it goes into innerHTML.
+        function esc(v) {
+            return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        function shortDate(isoStr) {
+            const d = new Date(isoStr);
+            if(isNaN(d)) return isoStr || '';
+            if(d.toDateString() === new Date().toDateString()) return 'Today';
+            return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+        }
+
+        function timeAgo(isoStr) {
+            const mins = Math.floor((Date.now() - new Date(isoStr).getTime()) / 60000);
+            if(isNaN(mins)) return '';
+            if(mins < 2) return 'Just now';
+            if(mins < 60) return `${mins} mins ago`;
+            const hrs = Math.floor(mins / 60);
+            if(hrs < 24) return `${hrs} hr${hrs === 1 ? '' : 's'} ago`;
+            if(hrs < 48) return 'Yesterday';
+            return shortDate(isoStr);
+        }
+
+        // Shape API rows into the objects the student's render functions expect.
+        function normalizeIssue(i) {
+            return {
+                ...i,
+                title: esc(i.title), neighborhood: esc(i.neighborhood), location: esc(i.location),
+                category: esc(i.category), reportedBy: esc(i.reportedBy), description: esc(i.description),
+                image: esc(i.image),
+                updates: (i.updates || []).map(u => ({ date: shortDate(u.date), text: esc(u.text) }))
+            };
+        }
+        function normalizeDonor(d) {
+            return { name: esc(d.name), detail: esc(d.detail), neighborhood: esc(d.neighborhood), time: timeAgo(d.createdAt) };
+        }
+        function setUserFromServer(u) {
+            currentUser = u ? {
+                isLoggedIn: true, id: u.id, email: u.email, name: esc(u.name), neighborhood: esc(u.neighborhood),
+                xp: u.xp, level: u.level, points: u.points, badges: []
+            } : { ...GUEST_USER };
+        }
+        function replaceIssue(issue) {
+            const idx = bronxIssues.findIndex(i => i.id === issue.id);
+            if(idx >= 0) bronxIssues[idx] = normalizeIssue(issue);
+        }
+        function requireLogin(action) {
+            if(currentUser && currentUser.isLoggedIn) return true;
+            showToast(`Please log in or sign up to ${action}.`, 'info');
+            openLoginModal();
+            return false;
+        }
+
+        async function loadSavedUserData() {
             try {
-                const saved = localStorage.getItem('fixmyblock_bronx_user');
-                if(saved) {
-                    currentUser = JSON.parse(saved);
-                }
-            } catch(e) {}
+                const [me, issues, tools, donors, rewards] = await Promise.all([
+                    api('/api/me'), api('/api/issues'), api('/api/tools'), api('/api/donors'), api('/api/rewards')
+                ]);
+                setUserFromServer(me.user);
+                bronxIssues = issues.map(normalizeIssue);
+                physicalToolsNeeded = tools.map(t => ({ ...t, item: esc(t.item), requestedBy: esc(t.requestedBy), neighborhood: esc(t.neighborhood) }));
+                recentDonors = donors.map(normalizeDonor);
+                rewardsCatalog = rewards.map(r => ({ ...r, title: esc(r.title), description: esc(r.description) }));
+            } catch(e) {
+                showToast("Couldn't reach the Fix My Block server. Please refresh.", 'error');
+            }
+        }
+
+        async function reloadDonors() {
+            try { recentDonors = (await api('/api/donors')).map(normalizeDonor); } catch(e) {}
+            renderRecentDonors();
+        }
+        async function reloadTools() {
+            try { physicalToolsNeeded = (await api('/api/tools')).map(t => ({ ...t, item: esc(t.item), requestedBy: esc(t.requestedBy), neighborhood: esc(t.neighborhood) })); } catch(e) {}
+            renderToolDonations();
         }
 
         function saveUserData() {
-            try {
-                localStorage.setItem('fixmyblock_bronx_user', JSON.stringify(currentUser));
-            } catch(e) {}
+            // DB WIRING: nothing to save locally - the server already stored the change.
             renderAuthHeaderUI();
             updateProfileUI();
         }
@@ -1670,11 +1619,32 @@
             }
         }
 
-        function openLoginModal() {
-            if(currentUser.name) {
-                document.getElementById('login-username').value = currentUser.name;
-                document.getElementById('login-neighborhood').value = currentUser.neighborhood;
+        // DB WIRING: login modal does real log in / sign up against /api/login and /api/signup.
+        let loginMode = 'login';   // 'login' or 'signup'
+
+        function setLoginMode(mode) {
+            loginMode = mode;
+            const signup = mode === 'signup';
+            document.getElementById('signup-only-fields').classList.toggle('hidden', !signup);
+            document.getElementById('login-username').required = signup;
+            document.getElementById('login-neighborhood').required = signup;
+            document.getElementById('login-password').autocomplete = signup ? 'new-password' : 'current-password';
+            document.getElementById('login-demo-hint').classList.toggle('hidden', signup);
+            document.getElementById('login-mode-toggle').innerText = signup ? 'Already have an account? Log in' : 'New here? Create an account';
+        }
+
+        function toggleLoginMode(e) {
+            if(e) e.preventDefault();
+            setLoginMode(loginMode === 'login' ? 'signup' : 'login');
+            if(loginMode === 'signup') {
+                document.getElementById('login-email').value = '';
+                document.getElementById('login-password').value = '';
             }
+        }
+
+        function openLoginModal() {
+            setLoginMode('login');
+            document.getElementById('logout-btn').classList.toggle('hidden', !currentUser.isLoggedIn);
             document.getElementById('login-modal').classList.remove('hidden');
         }
 
@@ -1682,18 +1652,45 @@
             document.getElementById('login-modal').classList.add('hidden');
         }
 
-        function handleLoginSubmit(e) {
-            e.preventDefault();
-            const username = document.getElementById('login-username').value.trim();
-            const neighborhood = document.getElementById('login-neighborhood').value;
-
-            currentUser.name = username || "Bronx Resident";
-            currentUser.neighborhood = neighborhood;
-            currentUser.isLoggedIn = true;
-
+        async function afterAuthChange() {
+            await loadSavedUserData();   // refresh "userUpvoted" flags etc. for this user
             saveUserData();
+            renderWireframeGallery();
+            renderIssuesFeed();
+            renderRewardsCatalog();
+            renderMapMarkers();
+        }
+
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            try {
+                let res;
+                if(loginMode === 'signup') {
+                    res = await api('/api/signup', { method: 'POST', body: {
+                        name: document.getElementById('login-username').value.trim(),
+                        neighborhood: document.getElementById('login-neighborhood').value,
+                        email, password
+                    }});
+                } else {
+                    res = await api('/api/login', { method: 'POST', body: { email, password } });
+                }
+                setUserFromServer(res.user);
+                closeLoginModal();
+                await afterAuthChange();
+                showToast(`👋 Welcome back, ${currentUser.name}! Progress saved.`, 'success');
+            } catch(err) {
+                showToast(esc(err.message), 'error');
+            }
+        }
+
+        async function handleLogout() {
+            try { await api('/api/logout', { method: 'POST' }); } catch(e) {}
+            setUserFromServer(null);
             closeLoginModal();
-            showToast(`👋 Welcome back, ${currentUser.name}! Progress saved.`, 'success');
+            await afterAuthChange();
+            showToast("Logged out.", 'info');
         }
 
         function switchTab(tabName) {
@@ -2008,9 +2005,15 @@
             }).join('');
         }
 
-        function addXP(amount, pointsAmount = 0, message = "") {
-            currentUser.xp += amount;
-            currentUser.points += pointsAmount;
+        // DB WIRING: the server awards XP/points; pass its updated user as serverUser.
+        function addXP(amount, pointsAmount = 0, message = "", serverUser = null) {
+            if(serverUser) {
+                currentUser.xp = serverUser.xp;
+                currentUser.points = serverUser.points;
+            } else {
+                currentUser.xp += amount;
+                currentUser.points += pointsAmount;
+            }
 
             const newLevel = Math.floor(currentUser.xp / 500) + 1;
             if(newLevel > currentUser.level) {
@@ -2038,18 +2041,23 @@
             document.getElementById('rewards-xp-bar').style.width = `${progress}%`;
         }
 
-        function handleUpvote(issueId) {
+        async function handleUpvote(issueId) {
             const issue = bronxIssues.find(i => i.id === issueId);
             if(!issue) return;
+            if(!requireLogin('upvote')) return;
 
-            if(issue.userUpvoted) {
-                issue.upvotes--;
-                issue.userUpvoted = false;
-                showToast("Removed upvote", 'info');
-            } else {
-                issue.upvotes++;
-                issue.userUpvoted = true;
-                addXP(10, 5, "Upvoted neighborhood report");
+            // DB WIRING: toggle the upvote on the server
+            try {
+                const res = await api(`/api/issues/${encodeURIComponent(issueId)}/upvote`, { method: 'POST' });
+                replaceIssue(res.issue);
+                if(!res.upvoted) {
+                    showToast("Removed upvote", 'info');
+                } else {
+                    addXP(res.xp, res.points, "Upvoted neighborhood report", res.user);
+                }
+            } catch(err) {
+                showToast(esc(err.message), 'error');
+                return;
             }
 
             renderIssuesFeed();
@@ -2058,15 +2066,25 @@
             }
         }
 
-        function redeemReward(rewardId, cost) {
+        async function redeemReward(rewardId, cost) {
+            if(!requireLogin('redeem rewards')) return;
             if(currentUser.points < cost) return;
-            currentUser.points -= cost;
+            // DB WIRING: spend points + record the redemption on the server
+            try {
+                const res = await api('/api/redeem', { method: 'POST', body: { reward_id: rewardId } });
+                currentUser.points = res.user.points;
+                currentUser.xp = res.user.xp;
+            } catch(err) {
+                showToast(esc(err.message), 'error');
+                return;
+            }
             saveUserData();
             renderRewardsCatalog();
             showToast("🎟️ Reward Redeemed! Voucher saved to your profile.", 'success');
         }
 
         function openReportModal() {
+            if(!requireLogin('report an issue')) return;   // DB WIRING
             document.getElementById('report-modal').classList.remove('hidden');
         }
 
@@ -2107,7 +2125,7 @@
             document.getElementById('upload-placeholder').classList.remove('hidden');
         }
 
-        function submitReportForm(e) {
+        async function submitReportForm(e) {
             e.preventDefault();
 
             const title = document.getElementById('report-title').value;
@@ -2131,34 +2149,24 @@
             const lat = baseCoords[0] + (Math.random() - 0.5) * 0.008;
             const lng = baseCoords[1] + (Math.random() - 0.5) * 0.008;
 
-            const newIssue = {
-                id: "bx-" + Math.floor(Math.random() * 9000 + 1000),
-                title: title,
-                neighborhood: neighborhood,
-                location: location,
-                category: category,
-                status: "Reported",
-                reportedBy: currentUser.name,
-                reportedDate: "Just Now",
-                upvotes: 1,
-                userUpvoted: true,
-                fundingGoal: 150,
-                fundingCurrent: 0,
-                lat: lat,
-                lng: lng,
-                image: photo,
-                description: details || "Reported photo evidence uploaded by Bronx resident.",
-                updates: [
-                    { date: "Today", text: `Reported by ${currentUser.name}. Ticket created.` }
-                ]
-            };
+            // DB WIRING: save the report to the database
+            let res;
+            try {
+                res = await api('/api/issues', { method: 'POST', body: {
+                    title: title, neighborhood: neighborhood, location: location, category: category,
+                    description: details, image: photo, lat: lat, lng: lng
+                }});
+            } catch(err) {
+                showToast(esc(err.message), 'error');
+                return;
+            }
 
-            bronxIssues.unshift(newIssue);
+            bronxIssues.unshift(normalizeIssue(res.issue));
 
             closeReportModal();
             document.getElementById('report-form').reset();
 
-            addXP(100, 50, "Submitted new Bronx issue report!");
+            addXP(res.xp, res.points, "Submitted new Bronx issue report!", res.user);
 
             renderWireframeGallery();
             renderIssuesFeed();
@@ -2231,34 +2239,33 @@
             });
         }
 
-        function confirmMoneyDonation() {
+        async function confirmMoneyDonation() {
+            if(!requireLogin('donate')) return;
             const donorName = document.getElementById('donor-name').value || currentUser.name || 'Anonymous Citizen';
 
-            if(selectedDonationIssueId) {
-                const issue = bronxIssues.find(i => i.id === selectedDonationIssueId);
-                if(issue) {
-                    issue.fundingCurrent += activeDonationAmount;
-                    issue.updates.push({
-                        date: "Today",
-                        text: `Pledge of $${activeDonationAmount} received from ${donorName}.`
-                    });
-                }
+            // DB WIRING: record the pledge (and add it to the issue's micro-grant) on the server
+            let res;
+            try {
+                res = await api('/api/donations', { method: 'POST', body: {
+                    type: 'monetary', amount: activeDonationAmount,
+                    issue_id: selectedDonationIssueId || null, donor_name: donorName
+                }});
+            } catch(err) {
+                showToast(esc(err.message), 'error');
+                return;
             }
+            if(res.issue) replaceIssue(res.issue);
 
-            recentDonors.unshift({
-                name: donorName,
-                detail: `Pledged $${activeDonationAmount} Grant`,
-                neighborhood: currentUser.neighborhood || "Bronx",
-                time: "Just now"
-            });
-
-            renderRecentDonors();
+            await reloadDonors();
             closeDonateModal();
-            addXP(50, 30, `Thank you for pledged $${activeDonationAmount} donation!`);
+            addXP(res.xp, res.points, `Thank you for pledged $${activeDonationAmount} donation!`, res.user);
             renderIssuesFeed();
+            if(activeSelectedIssueId && activeSelectedIssueId === selectedDonationIssueId) {
+                selectIssueForMapDetail(activeSelectedIssueId);
+            }
         }
 
-        function confirmToolDonation() {
+        async function confirmToolDonation() {
             const itemName = document.getElementById('tool-item-name').value;
             const neighborhood = document.getElementById('tool-neighborhood').value;
 
@@ -2267,16 +2274,23 @@
                 return;
             }
 
-            recentDonors.unshift({
-                name: currentUser.name || "Alex Rivera",
-                detail: `Pledged: ${itemName}`,
-                neighborhood: neighborhood,
-                time: "Just now"
-            });
+            if(!requireLogin('pledge equipment')) return;
+            // DB WIRING: record the tool pledge on the server
+            let res;
+            try {
+                res = await api('/api/donations', { method: 'POST', body: {
+                    type: 'tool_pledge', tool_name: itemName, neighborhood: neighborhood,
+                    notes: document.getElementById('tool-notes').value
+                }});
+            } catch(err) {
+                showToast(esc(err.message), 'error');
+                return;
+            }
 
-            renderRecentDonors();
+            await reloadDonors();
+            await reloadTools();
             closeDonateModal();
-            addXP(50, 30, "Pledged equipment donation!");
+            addXP(res.xp, res.points, "Pledged equipment donation!", res.user);
         }
 
         function showToast(message, type = 'info') {
